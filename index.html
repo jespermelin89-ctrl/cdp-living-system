@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CDP  - Living Ecosystem</title>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+/* Password Gate */
+#pw-gate{position:fixed;inset:0;z-index:9999;background:#0A0A0F;display:flex;align-items:center;justify-content:center;font-family:'Inter',system-ui,sans-serif}
+#pw-gate.hidden{display:none}
+.pw-box{text-align:center;max-width:360px;padding:40px}
+.pw-box h1{font-size:22px;font-weight:900;color:#F4F4F0;margin-bottom:6px;letter-spacing:-.02em}
+.pw-box h1 b{color:#34D399}
+.pw-box p{font-size:13px;color:#9A9AB0;margin-bottom:24px}
+.pw-box input{width:100%;padding:14px 18px;border-radius:10px;border:1px solid #2A2A3E;background:#12121E;color:#F4F4F0;font-size:15px;text-align:center;outline:none;font-family:'Inter',system-ui,sans-serif;letter-spacing:.15em;transition:border-color .2s}
+.pw-box input:focus{border-color:#34D399}
+.pw-box input::placeholder{letter-spacing:normal;color:#5A5A70}
+.pw-box button{margin-top:16px;padding:12px 32px;border-radius:10px;background:#34D399;color:#000;font-weight:800;font-size:14px;border:none;cursor:pointer;font-family:'Inter',system-ui,sans-serif;transition:opacity .2s}
+.pw-box button:hover{opacity:.85}
+.pw-err{color:#EF4444;font-size:12px;margin-top:12px;display:none}
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0A0A0F;--surface:#12121E;--surface2:#1A1A2C;--surface3:#232338;
+--border:#2A2A3E;--border2:#3A3A50;
+--accent:#34D399;--accent2:#10B981;--accent-glow:rgba(52,211,153,0.12);
+--green:#22C55E;--orange:#F59E0B;--blue:#3B82F6;--purple:#8B5CF6;--red:#EF4444;
+--text:#F4F4F0;--text2:#9A9AB0;--text3:#5A5A70;
+--shadow:rgba(0,0,0,0.5);--hover:rgba(52,211,153,0.06);
+--r:12px;--rs:8px;--font:'Inter',system-ui,-apple-system,sans-serif;--t:.22s cubic-bezier(.4,0,.2,1);
+}
+[data-theme="light"]{
+--bg:#F3F1EC;--surface:#FFFFFF;--surface2:#EDE9E3;--surface3:#E0DCD5;
+--border:#CCC8BF;--border2:#B8B4AB;
+--accent:#059669;--accent2:#047857;--accent-glow:rgba(5,150,105,0.08);
+--green:#16A34A;--orange:#D97706;--blue:#2563EB;--purple:#7C3AED;--red:#DC2626;
+--text:#111;--text2:#555;--text3:#888;
+--shadow:rgba(0,0,0,0.06);--hover:rgba(5,150,105,0.04);
+}
+html,body{height:100%;font-family:var(--font);background:var(--bg);color:var(--text);overflow:hidden;transition:background .3s,color .3s}
+button{font-family:var(--font);cursor:pointer;border:none;background:none;color:var(--text)}
+#app{display:flex;flex-direction:column;height:100vh}
+
+/* Header */
+#hd{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:rgba(18,18,30,.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(52,211,153,.1);z-index:100;flex-shrink:0;transition:background .3s}
+[data-theme="light"] #hd{background:rgba(255,255,255,.95);border-bottom-color:rgba(0,0,0,.1)}
+.hd-l{display:flex;align-items:center;gap:14px}
+.hd-l h1{font-size:17px;font-weight:800;letter-spacing:-.02em}
+.hd-l h1 b{color:var(--accent)}
+.hd-r{display:flex;align-items:center;gap:10px}
+.tabs{display:flex;gap:3px;background:rgba(10,10,15,.5);border-radius:var(--rs);padding:3px;border:1px solid rgba(52,211,153,.08)}
+.tab{padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;color:var(--text3);transition:var(--t);letter-spacing:.02em}
+.tab:hover{color:var(--text2);background:var(--surface2)}
+.tab.on{background:var(--accent);color:#000;font-weight:700}
+[data-theme="light"] .tabs{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.06)}
+.langs{display:flex;gap:1px;background:var(--bg);border-radius:5px;padding:2px}
+.lng{padding:3px 7px;border-radius:3px;font-size:10px;font-weight:700;color:var(--text3);transition:var(--t)}
+.lng:hover{color:var(--text2)}
+.lng.on{background:var(--surface2);color:var(--accent)}
+.thm{width:34px;height:18px;border-radius:9px;background:var(--border);position:relative;cursor:pointer;transition:var(--t)}
+.thm::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--accent);transition:var(--t)}
+[data-theme="light"] .thm::after{left:16px}
+.thm-icon{font-size:13px;cursor:pointer;line-height:1}
+
+/* Main */
+#mn{display:flex;flex:1;overflow:hidden;position:relative;background:radial-gradient(ellipse at center,rgba(52,211,153,.03) 0%,transparent 70%)}
+#net{width:100%;height:100%}
+
+/* Search */
+#sb{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:50;width:400px;max-width:88vw}
+#si{width:100%;padding:10px 16px 10px 38px;background:rgba(18,18,30,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(52,211,153,.15);border-radius:var(--r);color:var(--text);font-size:13px;outline:none;transition:var(--t);box-shadow:0 4px 24px rgba(0,0,0,.2)}
+[data-theme="light"] #si{background:rgba(255,255,255,.9);border-color:rgba(0,0,0,.08);box-shadow:0 4px 24px rgba(0,0,0,.04)}
+#si:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+#si-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;pointer-events:none}
+#sr{position:absolute;top:100%;left:0;right:0;margin-top:4px;background:rgba(18,18,30,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(52,211,153,.12);border-radius:var(--r);max-height:320px;overflow-y:auto;display:none;box-shadow:0 12px 40px rgba(0,0,0,.4)}
+#sr.v{display:block}
+.sri{padding:9px 14px;cursor:pointer;transition:var(--t);display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--border);font-size:12px}
+.sri:last-child{border:none}
+.sri:hover{background:var(--hover)}
+.sri-i{font-size:18px}
+.sri-n{font-weight:600;font-size:12px}
+.sri-c{font-size:10px;color:var(--text3)}
+.sri-s{font-size:9px;padding:2px 7px;border-radius:3px;font-weight:700}
+
+/* Side Panel */
+#sp{width:0;overflow:hidden;background:#12121E;border-left:1px solid rgba(52,211,153,.12);transition:width var(--t),background .3s;flex-shrink:0;position:relative;z-index:60}
+[data-theme="light"] #sp{background:#FFFFFF}
+#sp.open{width:500px}
+#spi{width:500px;height:100%;overflow-y:auto;padding:22px}
+.sx{position:absolute;top:12px;right:12px;font-size:16px;color:var(--text3);padding:4px 8px;border-radius:6px;transition:all var(--t)}
+.sx:hover{background:rgba(52,211,153,.1);color:var(--accent);transform:scale(1.1)}
+.sh{position:relative;margin-bottom:18px}
+.sh-ic{font-size:36px;margin-bottom:6px;display:block}
+.sh-t{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:3px}
+.sh-cat{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.badge{display:inline-block;padding:3px 10px;border-radius:16px;font-size:9px;font-weight:700;margin-top:8px;text-transform:uppercase;letter-spacing:.06em}
+.ss{margin-bottom:18px}
+.ss-t{font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:8px;border-bottom:1px solid rgba(52,211,153,.15);padding-bottom:6px}
+.ss-d{font-size:14px;line-height:1.65;color:var(--text2)}
+.ss-str{font-size:12px;line-height:1.55;color:var(--accent);font-weight:500;background:var(--accent-glow);padding:10px 12px;border-radius:var(--rs);border-left:3px solid var(--accent)}
+.ss-hi{background:var(--accent-glow);border:1px solid var(--accent);border-radius:var(--rs);padding:10px 12px;margin-bottom:10px}
+.ss-hi b{font-size:11px;color:var(--accent);display:block;margin-bottom:3px}
+.ss-hi p{font-size:12px;color:var(--text);line-height:1.5}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.mc{background:var(--bg);border-radius:var(--rs);padding:12px;border:1px solid var(--border);transition:all var(--t)}
+.mc:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:0 4px 16px rgba(52,211,153,.08)}
+.mc-l{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em}
+.mc-v{font-size:20px;font-weight:900;margin-top:2px;color:var(--accent);letter-spacing:-.02em}
+.mc-s{font-size:9px;color:var(--green);margin-top:1px}
+.rl{display:flex;align-items:center;gap:8px;padding:6px 4px;cursor:pointer;transition:all var(--t);font-size:12px;border-radius:6px;margin:1px 0}
+.rl:hover{color:var(--accent);background:var(--accent-glow);padding-left:8px}
+.rl-d{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.rl-a{color:var(--text3);font-size:11px}
+.rl-n{font-weight:500}
+.rl-t{font-size:10px;color:var(--text3);margin-left:auto}
+.opp{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:12px;color:var(--text2);background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);margin-bottom:6px;cursor:pointer;transition:all var(--t)}
+.opp:hover{border-color:var(--accent);color:var(--text);background:var(--accent-glow);transform:translateX(3px)}
+.opp::before{content:"→";color:var(--accent);font-weight:700;font-size:13px;flex-shrink:0}
+.desc-lead{font-size:15px;line-height:1.7;color:var(--text);font-weight:500;margin-bottom:12px}
+.desc-body{font-size:14px;line-height:1.65;color:var(--text2)}
+.desc-body p{margin-bottom:8px}
+.desc-body p:last-child{margin-bottom:0}
+.desc-fact{display:inline;background:var(--accent-glow);color:var(--accent);font-weight:600;padding:1px 5px;border-radius:4px;font-size:12px}
+.desc-kv{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.desc-kv-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:8px 10px}
+.desc-kv-item .kv-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em}
+.desc-kv-item .kv-val{font-size:13px;font-weight:700;color:var(--accent);margin-top:1px}
+/* Business Plan in side panel */
+.bp-nav{display:flex;flex-direction:column;gap:2px;margin-bottom:16px}
+.bp-nav-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--rs);cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);transition:all var(--t);border:1px solid transparent}
+.bp-nav-item:hover{background:var(--accent-glow);color:var(--text);border-color:rgba(52,211,153,.1)}
+.bp-nav-item.bp-active{background:var(--accent-glow);color:var(--accent);border-color:rgba(52,211,153,.2);font-weight:700}
+.bp-nav-item .bp-nav-icon{font-size:14px}
+.bp-nav-item .bp-nav-num{font-size:9px;color:var(--text3);min-width:16px}
+.bp-section{display:none;animation:fadeSlide .3s ease-out}
+.bp-section.bp-visible{display:block}
+.bp-section-title{font-size:16px;font-weight:800;margin-bottom:14px;color:var(--text);display:flex;align-items:center;gap:8px}
+.bp-section-title span{font-size:20px}
+.bp-footer{display:flex;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid var(--border)}
+.bp-btn{padding:8px 16px;border-radius:var(--rs);font-size:11px;font-weight:700;cursor:pointer;transition:all var(--t);border:1px solid var(--border);color:var(--text2);background:var(--bg)}
+.bp-btn:hover{border-color:var(--accent);color:var(--accent)}
+.bp-btn-primary{background:var(--accent);color:#000;border-color:var(--accent)}
+.bp-btn-primary:hover{background:var(--accent2);border-color:var(--accent2)}
+.bp-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.bp-stat{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:10px;text-align:center}
+.bp-stat-v{font-size:16px;font-weight:900;color:var(--accent);letter-spacing:-.02em}
+.bp-stat-l{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.bp-p{font-size:13px;line-height:1.65;color:var(--text2);margin-bottom:10px}
+.bp-p strong{color:var(--text);font-weight:700}
+.bp-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.bp-cards-sm .bp-card{padding:8px 10px}
+.bp-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:12px;transition:all var(--t)}
+.bp-card:hover{border-color:var(--accent);transform:translateY(-1px)}
+.bp-card{cursor:pointer}
+.bp-card-detail{display:none;margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:10px;line-height:1.55;color:var(--text2)}
+.bp-card.bp-card-open .bp-card-detail{display:block}
+.bp-card.bp-card-open{grid-column:1/-1;border-color:var(--accent);background:var(--accent-glow)}
+.bp-card-icon{font-size:18px;margin-bottom:4px}
+.bp-card-t{font-size:11px;font-weight:700;color:var(--text);margin-bottom:3px}
+.bp-card-d{font-size:10px;line-height:1.5;color:var(--text2)}
+.bp-timeline{position:relative;padding-left:28px;margin:10px 0}
+.bp-timeline::before{content:\'\';position:absolute;left:10px;top:0;bottom:0;width:2px;background:var(--border)}
+.bp-tl-item{position:relative;margin-bottom:14px}
+.bp-tl-item::before{content:\'\';position:absolute;left:-22px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--surface)}
+.bp-tl-launch::before{background:var(--green);box-shadow:0 0 8px rgba(34,197,94,.4)}
+.bp-tl-week{font-size:9px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.bp-tl-title{font-size:12px;font-weight:700;color:var(--text)}
+.bp-tl-desc{font-size:10px;color:var(--text2);line-height:1.5;margin-top:2px}
+.bp-sub{font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid rgba(52,211,153,.15)}
+.bp-milestones{display:flex;flex-direction:column;gap:6px}
+.bp-ms{display:flex;gap:10px;font-size:11px;align-items:baseline}
+.bp-ms-date{font-weight:700;color:var(--accent);min-width:65px;font-size:10px}
+.bp-ms-text{color:var(--text2)}
+.bp-segments{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.bp-seg{position:relative}
+.bp-seg-bar{height:24px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:4px;min-width:20px;opacity:.3}
+.bp-seg-label{position:absolute;top:4px;left:8px;font-size:10px;font-weight:600;color:var(--text);display:flex;justify-content:space-between;width:calc(100% - 16px)}
+.bp-seg-label span{color:var(--accent);font-weight:800}
+.bp-quote{background:var(--accent-glow);border-left:3px solid var(--accent);padding:10px 14px;border-radius:0 var(--rs) var(--rs) 0;font-size:11px;font-style:italic;color:var(--text2);line-height:1.55;margin:10px 0}
+.bp-team{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.bp-member{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:12px}
+.bp-member-name{font-size:14px;font-weight:800;color:var(--text)}
+.bp-member-role{font-size:10px;color:var(--accent);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.bp-member-scope{font-size:11px;color:var(--text2);line-height:1.4}
+.bp-member-comp{font-size:13px;font-weight:800;color:var(--accent);margin-top:4px}
+.bp-note{font-size:10px;color:var(--text3);font-style:italic;line-height:1.5;margin-top:8px;padding:8px;background:var(--bg);border-radius:var(--rs)}
+.bp-costs{display:flex;flex-direction:column;gap:4px;margin:8px 0}
+.bp-cost-item{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;font-size:11px;color:var(--text2);border-bottom:1px solid rgba(52,211,153,.06)}
+.bp-cost-v{font-weight:700;color:var(--text);font-size:12px}
+.bp-cost-total{display:flex;justify-content:space-between;padding:8px 10px;background:var(--accent-glow);border-radius:var(--rs);margin-top:4px}
+.bp-cost-total span{font-weight:800;color:var(--accent);font-size:12px}
+.bp-scenarios{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.bp-scenario{background:var(--bg);border-radius:var(--rs);padding:12px;border-left:3px solid}
+.bp-sc-caution{border-color:var(--red)}
+.bp-sc-base{border-color:var(--accent)}
+.bp-sc-up{border-color:var(--green)}
+.bp-sc-name{font-size:12px;font-weight:800;color:var(--text);margin-bottom:2px}
+.bp-sc-detail{font-size:10px;color:var(--text3)}
+.bp-sc-rev{font-size:15px;font-weight:900;color:var(--accent);margin:4px 0 2px}
+.bp-sc-margin{font-size:10px;color:var(--text2)}
+.bp-invest-total{text-align:center;padding:18px;background:var(--accent-glow);border:1px solid rgba(52,211,153,.2);border-radius:var(--r);margin-bottom:14px}
+.bp-invest-amount{font-size:28px;font-weight:900;color:var(--accent)}
+.bp-invest-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+.bp-checklist{display:flex;flex-direction:column;gap:6px}
+.bp-check{display:flex;align-items:flex-start;gap:8px;padding:8px;background:var(--bg);border-radius:var(--rs);border:1px solid var(--border)}
+.bp-check-status{font-size:14px}
+.bp-check-item{font-size:11px;font-weight:600;color:var(--text)}
+.bp-check-who{font-size:9px;color:var(--text3);margin-top:1px}
+.bp-risks{display:flex;flex-direction:column;gap:8px}
+.bp-risk{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:12px}
+.bp-risk-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.bp-risk-name{font-size:12px;font-weight:700;color:var(--text)}
+.bp-risk-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px}
+.bp-risk-high{background:rgba(239,68,68,.15);color:var(--red)}
+.bp-risk-med{background:rgba(245,158,11,.15);color:var(--orange)}
+.bp-risk-low{background:rgba(34,197,94,.15);color:var(--green)}
+.bp-risk-mit{font-size:10px;color:var(--text2);line-height:1.5}
+.bp-expand{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0}
+.bp-exp-item{background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:10px;display:flex;justify-content:space-between;align-items:center}
+.bp-exp-mod{font-size:11px;font-weight:600;color:var(--text)}
+.bp-exp-time{font-size:9px;color:var(--accent);font-weight:700;background:var(--accent-glow);padding:2px 6px;border-radius:4px}
+.ptags{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.ptag{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:3px 10px;font-size:10px;font-weight:500;color:var(--text2)}
+/* Testimonial */
+.tq{background:var(--bg);border-radius:var(--rs);padding:10px 12px;margin-bottom:6px;border:1px solid var(--border)}
+.tq q{font-size:12px;color:var(--text2);line-height:1.5;font-style:italic}
+.tq cite{font-size:10px;color:var(--accent);display:block;margin-top:4px;font-style:normal;font-weight:600}
+
+.ss-toggle{cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;padding:2px 0;transition:color .2s}
+.ss-toggle:hover{color:var(--text)}
+.ss-toggle::after{content:'▸';font-size:11px;color:var(--accent);opacity:.5;transition:transform .25s,opacity .25s}
+.ss-toggle:hover::after{opacity:1}
+.ss-toggle.open::after{transform:rotate(90deg);opacity:1}
+.ss-body{display:none;margin-top:7px}
+.ss-body.open{display:block}
+
+/* Side Panel Entry Animation */
+#sp.open #spi{animation:fadeSlide .3s ease-out}
+@keyframes fadeSlide{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+
+/* Investor View */
+#iv{display:none;position:absolute;inset:0;background:var(--bg);z-index:40;overflow-y:auto;transition:background .3s}
+#iv.v{display:block}
+.ivc{max-width:1020px;margin:0 auto;padding:44px 28px}
+.ivh{text-align:center;margin-bottom:48px}
+.ivh h2{font-size:36px;font-weight:900;letter-spacing:-.03em;margin-bottom:10px}
+.ivh h2 b{color:var(--accent)}
+.ivh p{font-size:15px;color:var(--text2);max-width:660px;margin:0 auto;line-height:1.65}
+.ivhs{display:flex;justify-content:center;gap:28px;margin-top:24px;flex-wrap:wrap}
+.ivhv{text-align:center}
+.ivhv strong{font-size:26px;font-weight:900;color:var(--accent);display:block}
+.ivhv small{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.ivs{margin-bottom:38px}
+.ivs-t{font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.ivs-t::before{content:'';width:18px;height:2px;background:var(--accent);border-radius:1px}
+.ivg{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.icard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;transition:all .25s ease;cursor:pointer}
+.icard:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 32px rgba(52,211,153,.12)}
+.icard-i{font-size:24px;margin-bottom:6px}
+.icard-t{font-size:15px;font-weight:700;margin-bottom:5px}
+.icard-d{font-size:12px;color:var(--text2);line-height:1.45}
+.icard-s{margin-top:8px}
+.ivl{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ivli{background:var(--surface);border-left:3px solid var(--accent);border-radius:0 var(--rs) var(--rs) 0;padding:14px 18px;transition:background .3s}
+.ivli b{font-size:13px;font-weight:700;display:block;margin-bottom:3px}
+.ivli p{font-size:12px;color:var(--text2);line-height:1.45}
+/* Testimonial grid */
+.ivtg{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.ivtq{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.ivtq q{font-size:12px;color:var(--text2);line-height:1.5;font-style:italic;display:block}
+.ivtq cite{font-size:11px;color:var(--accent);display:block;margin-top:6px;font-style:normal;font-weight:700}
+
+/* Admin */
+#ap{display:none;position:absolute;top:0;right:0;bottom:0;width:360px;background:rgba(18,18,30,1);border-left:1px solid rgba(52,211,153,.12);z-index:45;overflow-y:auto;padding:20px;transition:background .3s}
+#ap.v{display:block}
+.at{font-size:15px;font-weight:700;margin-bottom:14px}
+.an{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border)}
+.an-i{font-size:16px}
+.an-n{flex:1;font-size:12px;font-weight:500}
+.tgl{position:relative;width:32px;height:18px;background:var(--border);border-radius:9px;cursor:pointer;transition:var(--t)}
+.tgl.on{background:var(--accent)}
+.tgl::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:var(--t)}
+.tgl.on::after{left:16px}
+
+/* Legend */
+#lg{position:absolute;bottom:14px;left:14px;background:rgba(18,18,30,.95);border:1px solid rgba(52,211,153,.1);border-radius:var(--r);padding:12px 16px;z-index:30;font-size:10px;transition:background .3s;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+[data-theme="light"] #lg{background:rgba(255,255,255,.88);border-color:rgba(0,0,0,.06);box-shadow:0 4px 20px rgba(0,0,0,.06)}
+.lg-t{font-weight:700;margin-bottom:5px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-size:9px}
+.lg-i{display:flex;align-items:center;gap:7px;padding:1px 0;color:var(--text2)}
+.lg-d{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+/* Tooltip */
+.vis-tooltip{background:var(--surface)!important;border:1px solid var(--border)!important;border-radius:var(--rs)!important;padding:10px 14px!important;color:var(--text)!important;font-family:var(--font)!important;font-size:11px!important;box-shadow:0 6px 28px var(--shadow)!important;max-width:280px!important;line-height:1.5!important}
+
+.st-active{background:rgba(34,197,94,.15);color:var(--green)}
+.st-in_progress{background:rgba(245,158,11,.15);color:var(--orange)}
+.st-planned{background:rgba(59,130,246,.15);color:var(--blue)}
+.st-future{background:rgba(139,92,246,.15);color:var(--purple)}
+.st-completed{background:rgba(107,114,128,.15);color:#6B7280}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+@media(max-width:768px){
+#sp.open{width:100%;position:absolute;z-index:60}
+#sb{width:88vw}
+.ivl,.ivg{grid-template-columns:1fr}
+.ivc{padding:20px 14px}
+#ap{width:100%}
+.ivh h2{font-size:26px}
+}
+/* AI Assistant */
+#ai-fab{position:fixed;bottom:90px;right:24px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#000;font-size:24px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:200;box-shadow:0 4px 20px rgba(52,211,153,.3);transition:all .3s;border:none}
+#ai-fab:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(52,211,153,.5)}
+#ai-panel{position:fixed;bottom:160px;right:24px;width:420px;max-height:70vh;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);z-index:200;display:none;flex-direction:column;box-shadow:0 12px 48px rgba(0,0,0,.3);overflow:hidden}
+#ai-panel.open{display:flex}
+#ai-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2)}
+#ai-header h3{font-size:14px;font-weight:800;color:var(--text)}
+.ai-hbtn{font-size:11px;padding:4px 10px;border-radius:4px;background:var(--bg);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .2s}
+.ai-hbtn:hover{border-color:var(--accent);color:var(--accent)}
+.ai-hbtn.admin-on{background:var(--accent);color:#000;border-color:var(--accent)}
+#ai-messages{flex:1;overflow-y:auto;padding:14px;min-height:200px;max-height:50vh}
+.ai-msg{margin-bottom:12px;max-width:88%}
+.ai-msg.user{margin-left:auto;text-align:right}
+.ai-msg.user .ai-bubble{background:var(--accent);color:#000;border-radius:var(--rs) var(--rs) 2px var(--rs)}
+.ai-msg.assistant .ai-bubble{background:var(--surface2);color:var(--text);border-radius:var(--rs) var(--rs) var(--rs) 2px}
+.ai-bubble{padding:10px 14px;font-size:13px;line-height:1.55;display:inline-block;text-align:left;border-radius:var(--rs)}
+.ai-bubble a{color:var(--accent);text-decoration:underline;cursor:pointer;font-weight:600}
+.ai-typing{color:var(--text3);font-size:12px;padding:8px 14px;font-style:italic}
+#ai-input-wrap{padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;background:var(--surface)}
+#ai-input{flex:1;padding:10px 14px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;font-family:var(--font);outline:none;resize:none}
+#ai-input:focus{border-color:var(--accent)}
+#ai-send{padding:10px 16px;border-radius:var(--rs);background:var(--accent);color:#000;font-weight:700;font-size:12px;cursor:pointer;border:none;transition:all .2s}
+#ai-send:hover{opacity:.85}
+#ai-admin-bar{padding:8px 14px;background:rgba(52,211,153,.08);border-top:1px solid var(--border);display:none;gap:6px;flex-wrap:wrap}
+#ai-admin-bar.v{display:flex}
+.ai-admin-action{font-size:10px;padding:4px 10px;border-radius:4px;background:var(--bg);border:1px solid var(--border);color:var(--text2);cursor:pointer}
+.ai-admin-action:hover{border-color:var(--accent);color:var(--accent)}
+#ai-login{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:250;display:none;align-items:center;justify-content:center}
+#ai-login.v{display:flex}
+.ai-login-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px;width:320px;text-align:center}
+.ai-login-box h3{font-size:16px;font-weight:800;margin-bottom:16px}
+.ai-login-box input{width:100%;padding:10px 14px;border-radius:var(--rs);border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:13px;margin-bottom:12px;text-align:center}
+.ai-login-box button{padding:10px 24px;border-radius:var(--rs);background:var(--accent);color:#000;font-weight:700;border:none;cursor:pointer;font-size:13px}
+.ai-login-err{color:var(--red);font-size:11px;margin-top:8px;display:none}
+#ai-key-setup{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:11px;display:none}
+#ai-key-setup.v{display:block}
+#ai-key-input{width:100%;padding:6px 10px;border-radius:4px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:11px;margin-top:6px;font-family:monospace}
+@media(max-width:768px){
+#ai-panel{width:calc(100vw - 20px);right:10px;bottom:80px;max-height:65vh}
+}
+</style>
+</head>
+<body>
+<div id="pw-gate">
+<div class="pw-box">
+<h1>COACHES DON'T <b>PLAY</b></h1>
+<p>Living Ecosystem - Restricted Access</p>
+<input id="pw-input" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')pwCheck()">
+<button onclick="pwCheck()">Enter</button>
+<div class="pw-err" id="pw-err">Incorrect password</div>
+</div>
+</div>
+<script>
+function pwCheck(){
+  const p=document.getElementById('pw-input').value;
+  const h=Array.from(p).reduce((a,c)=>((a<<5)-a)+c.charCodeAt(0),0);
+  if(h===636437937||h===-2939561583){
+    document.getElementById('pw-gate').classList.add('hidden');
+    if(typeof init==='function'&&!document.querySelector('canvas'))init();
+  }else{
+    document.getElementById('pw-err').style.display='block';
+    document.getElementById('pw-input').value='';
+  }
+}
+</script>
+<div id="app">
+<header id="hd">
+<div class="hd-l">
+<h1>COACHES DON'T <b>PLAY</b></h1>
+<nav class="tabs">
+<button class="tab on" data-v="map" onclick="sw('map')">Map</button>
+<button class="tab" data-v="investor" onclick="sw('investor')">Investor</button>
+<button class="tab" data-v="admin" onclick="sw('admin')">Admin</button>
+</nav>
+</div>
+<div class="hd-r">
+<span class="thm-icon" onclick="tt()">◐</span>
+<div class="thm" onclick="tt()"></div>
+<span class="thm-icon" onclick="tt()">◑</span>
+<div class="langs">
+<button class="lng on" onclick="sl('sv')">SV</button>
+<button class="lng" onclick="sl('en')">EN</button>
+<button class="lng" onclick="sl('es')">ES</button>
+<button class="lng" onclick="sl('ru')">RU</button>
+</div>
+</div>
+</header>
+<div id="mn">
+<div id="sb"><span id="si-icon">⌕</span><input id="si" placeholder="Sök..." oninput="hs(this.value)"><div id="sr"></div></div>
+<div style="flex:1;position:relative;z-index:1;overflow:hidden"><div id="net"></div></div>
+<div id="lg">
+<div class="lg-t">Status</div>
+<div class="lg-i"><div class="lg-d" style="background:var(--green)"></div>Aktivt</div>
+<div class="lg-i"><div class="lg-d" style="background:var(--orange)"></div>Pågående</div>
+<div class="lg-i"><div class="lg-d" style="background:var(--blue)"></div>Planerat</div>
+<div class="lg-i"><div class="lg-d" style="background:var(--purple)"></div>Framtida</div>
+<div class="lg-i"><div class="lg-d" style="background:#6B7280"></div>Avslutat</div>
+</div>
+<div id="sp"><div id="spi"></div></div>
+<div id="iv"></div>
+<div id="ap"></div>
+<button id="ai-fab" onclick="aiToggle()" title="AI Assistant">AI</button>
+<div id="ai-panel">
+  <div id="ai-header">
+    <h3>CDP AI Assistant</h3>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="ai-hbtn" onclick="aiSetKey()" title="API Key">⚙</button>
+      <button class="ai-hbtn" onclick="aiDownload()" title="Download">↓</button>
+      <button class="ai-hbtn" id="ai-admin-btn" onclick="aiAdminLogin()">Admin</button>
+      <button class="ai-hbtn" onclick="aiToggle()">✕</button>
+    </div>
+  </div>
+  <div id="ai-key-setup">
+    <span>Enter your OpenAI API key:</span>
+    <div style="display:flex;gap:6px;margin-top:6px"><input id="ai-key-input" type="password" placeholder="sk-..."><button class="ai-hbtn" onclick="aiSaveKey()">Save</button></div>
+  </div>
+  <div id="ai-messages"></div>
+  <div id="ai-admin-bar">
+    <button class="ai-admin-action" onclick="document.getElementById('ai-input').value='List all nodes and their current status';aiSend()">Status Overview</button>
+    <button class="ai-admin-action" onclick="document.getElementById('ai-input').value='Show the business plan summary';aiSend()">Business Plan</button>
+    <button class="ai-admin-action" onclick="document.getElementById('ai-input').value='What are the key metrics?';aiSend()">KPIs</button>
+  </div>
+  <div id="ai-input-wrap">
+    <textarea id="ai-input" rows="1" placeholder="" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSend()}"></textarea>
+    <button id="ai-send" onclick="aiSend()">→</button>
+  </div>
+</div>
+<div id="ai-login">
+  <div class="ai-login-box">
+    <h3>Admin Login</h3>
+    <input id="ai-pw" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')aiCheckLogin()">
+    <button onclick="aiCheckLogin()">Login</button>
+    <div class="ai-login-err" id="ai-login-err">Wrong password</div>
+    <p style="margin-top:12px;font-size:10px;color:var(--text3);cursor:pointer" onclick="document.getElementById('ai-login').classList.remove('v')">Cancel</p>
+  </div>
+</div>
+</div>
+</div>
+<script>
+let TH='dark',LN='sv',CV='map',SN=null,net,nDS,eDS,NAV_HIST=[];
+const SC={active:'#22C55E',in_progress:'#F59E0B',planned:'#3B82F6',future:'#8B5CF6',completed:'#6B7280'},
+SB={active:'rgba(34,197,94,.85)',in_progress:'rgba(245,158,11,.85)',planned:'rgba(59,130,246,.85)',future:'rgba(139,92,246,.85)',completed:'rgba(107,114,128,.85)'},
+SBL={active:'rgba(34,197,94,.25)',in_progress:'rgba(245,158,11,.25)',planned:'rgba(59,130,246,.25)',future:'rgba(139,92,246,.25)',completed:'rgba(107,114,128,.25)'},
+CC={core:'#22C55E',growth:'#F59E0B',expansion:'#8B5CF6',support:'#3B82F6'};
+
+const L={
+sv:{hero:"Coaches Don't Play",sub:"Levande Ekosystem",desc:"Världens första Human Upgrade System. Byggt från noll i Torrevieja, Spanien  - nu aktivt i 59 länder. Community, outdoor gym, coaching, retreats, digital plattform och flera framtida distributionskanaler.",
+search:"Sök i ekosystemet...",leg:"Status",sa:"Aktivt",sp:"Pågående",spl:"Planerat",sf:"Framtida",sc:"Avslutat",
+sd:"Beskrivning",sst:"Strategisk roll",sr:"Relationer",sm:"Nyckeltal",so:"Möjligheter",spt:"Partnerskap",shi:"Viktig insikt",stm:"Röster från communityn",
+it:"Investerartes",ic:"Nuvarande verksamhet",ie:"Ekosystemlogik",ig:"Tillväxt",ix:"Expansion & Framtid",ilo:"Varför CDP inte är ett gym",
+ad:"Admin  - Investerarsynlighet",
+cc:"Kärna",cg:"Tillväxt",ce:"Expansion",cs:"Stöd",
+rs:"stödjer",rg:"genererar",rd:"distribuerar",rm:"monetiserar",rst:"förstärker",rc:"innehåller",rf:"matar",rde:"definierar",rme:"mäter",rp:"planerar",
+countries:"Länder",ig2:"Instagram",cw:"Pass/vecka",lang:"Språk",rev:"Investment ask",be:"Break-even",zero:"Noll ads/funding",founded:"Grundat",team:"Kärnteam",location:"Plats",type:"Typ"},
+en:{hero:"Coaches Don't Play",sub:"Living Ecosystem",desc:"The world's first Human Upgrade System. Built from zero in Torrevieja, Spain  - now active in 59 countries. Community, outdoor gym, coaching, retreats, digital platform and multiple future distribution channels.",
+search:"Search the ecosystem...",leg:"Status",sa:"Active",sp:"In Progress",spl:"Planned",sf:"Future",sc:"Completed",
+sd:"Description",sst:"Strategic Role",sr:"Relationships",sm:"Key Metrics",so:"Opportunities",spt:"Partnerships",shi:"Key Insight",stm:"Community Voices",
+it:"Investor Thesis",ic:"Current Operations",ie:"Ecosystem Logic",ig:"Growth",ix:"Expansion & Future",ilo:"Why CDP Is Not Just a Gym",
+ad:"Admin  - Investor Visibility",
+cc:"Core",cg:"Growth",ce:"Expansion",cs:"Support",
+rs:"supports",rg:"generates",rd:"distributes",rm:"monetizes",rst:"strengthens",rc:"contains",rf:"feeds",rde:"defines",rme:"measures",rp:"plans",
+countries:"Countries",ig2:"Instagram",cw:"Classes/wk",lang:"Languages",rev:"Investment ask",be:"Break-even",zero:"Zero ads/funding",founded:"Founded",team:"Core team",location:"Location",type:"Type"},
+es:{hero:"Coaches Don't Play",sub:"Ecosistema Vivo",desc:"El primer Sistema de Mejora Humana del mundo. Construido desde cero en Torrevieja, España  - activo en 59 países.",
+search:"Buscar...",leg:"Estado",sa:"Activo",sp:"En Progreso",spl:"Planificado",sf:"Futuro",sc:"Completado",
+sd:"Descripción",sst:"Rol Estratégico",sr:"Relaciones",sm:"Métricas",so:"Oportunidades",spt:"Asociaciones",shi:"Dato Clave",stm:"Voces de la Comunidad",
+it:"Tesis de Inversión",ic:"Operaciones",ie:"Lógica",ig:"Crecimiento",ix:"Expansión",ilo:"Por qué CDP no es un gimnasio",
+ad:"Admin",cc:"Núcleo",cg:"Crecimiento",ce:"Expansión",cs:"Soporte",
+rs:"apoya",rg:"genera",rd:"distribuye",rm:"monetiza",rst:"fortalece",rc:"contiene",rf:"alimenta",rde:"define",rme:"mide",rp:"planifica",
+countries:"Países",ig2:"Instagram",cw:"Clases/sem",lang:"Idiomas",rev:"Inversión",be:"Break-even",zero:"Sin ads/fondos",founded:"Fundado",team:"Equipo",location:"Ubicación",type:"Tipo"},
+ru:{hero:"Coaches Don't Play",sub:"Живая Экосистема",desc:"Первая в мире система Human Upgrade. Построена с нуля в Торревьехе, Испания  - активна в 59 странах.",
+search:"Поиск...",leg:"Статус",sa:"Активно",sp:"В процессе",spl:"Запланировано",sf:"Будущее",sc:"Завершено",
+sd:"Описание",sst:"Стратегическая роль",sr:"Связи",sm:"Метрики",so:"Возможности",spt:"Партнёрства",shi:"Ключевой факт",stm:"Голоса сообщества",
+it:"Инвестиционный тезис",ic:"Текущие операции",ie:"Логика экосистемы",ig:"Рост",ix:"Расширение",ilo:"Почему CDP  - не спортзал",
+ad:"Админ",cc:"Ядро",cg:"Рост",ce:"Расширение",cs:"Поддержка",
+rs:"поддерживает",rg:"генерирует",rd:"распределяет",rm:"монетизирует",rst:"усиливает",rc:"содержит",rf:"питает",rde:"определяет",rme:"измеряет",rp:"планирует",
+countries:"Страны",ig2:"Instagram",cw:"Занятий/нед",lang:"Языки",rev:"Инвестиции",be:"Break-even",zero:"Без рекламы",founded:"Основано",team:"Команда",location:"Расположение",type:"Тип"}
+};
+function t(k){return L[LN]?.[k]||L.en[k]||k}
+function sl2(s){return{active:t('sa'),in_progress:t('sp'),planned:t('spl'),future:t('sf'),completed:t('sc')}[s]||s}
+function cl(c){return{core:t('cc'),growth:t('cg'),expansion:t('ce'),support:t('cs')}[c]||c}
+
+// ===== ALL 22 NODES WITH REAL DATA =====
+const N=[
+{id:'overview',i:'CDP',l:'CDP Översikt|CDP Overview|Visión CDP|Обзор CDP',c:'core',s:'active',
+d:'Coaches Don\'t Play  - världens första Human Upgrade System. Grundat av Jesper "Captain J" Melin och Michelle Melin i Torrevieja, Spanien. Byggt från absolut noll  - noll funding, noll reklam, noll kontor. Nu aktivt i 59 länder genom Instagram, WhatsApp och Skool. 8+ revenue engines, var och en förstärker de andra. Gratis outdoor gym i drift 2+ år. Retreats utsålda utan reklam. Anti-fragil model: varje kanal, hub, coach och partner ökar systemets motståndskraft.|The world\'s first Human Upgrade System. Founded by Jesper "Captain J" Melin and Michelle Melin in Torrevieja, Spain. Built from absolute zero. Now active in 59 countries. 8+ revenue engines, each strengthening the others. Free outdoor gym running 2+ years. Retreats sold out without ads. Anti-fragile model: every channel strengthens resilience.|El primer Sistema de Mejora Humana. 8+ motores de ingresos, cada uno fortaleciendo a los otros. Modelo anti-frágil.|Первая в мире система Human Upgrade. 8+ источников доходов, каждый усиливает других. Модель антихрупкости.',
+st:'Multi-Engine Human Behavior Jet Engine: 9 motorer som var och en fungerar som både tratt och svänghjul. Free Gym, CDP Hub (Cabana), Online Platform, 90-Day Challenge, Partner Network, Global Coaches Network, Retreats, CDP Coin, AI Department.|9 engines each functioning as both funnel and flywheel. Free Gym, CDP Hub (Cabana), Online Platform, 90-Day Challenge, Partner Network, Global Coaches, Retreats, CDP Coin, AI Department.|9 motores que funcionan como embudo y volante.|9 двигателей, каждый работает как воронка и маховик.',
+m:[{l:'countries',v:'59',s:'Organiskt'},{l:'ig2',v:'12.9K+',s:'Followers'},{l:'zero',v:'€0',s:'Bootstrapped'},{l:'founded',v:'2022',s:'Torrevieja'}],iv:true},
+
+{id:'thesis',i:'◎',l:'Mission & Tes|Mission & Thesis|Misión y Tesis|Миссия',c:'core',s:'active',
+d:'CDP säljer inte gympass. CDP bygger infrastruktur för mänsklig uppgradering  - the Human Upgrade System. Ett kombinerat fysiskt, digitalt, psykologiskt, socialt och ekonomiskt ekosystem som stärker människor och samhällen simultant. 9 beteendemotorer som alla förstärker varandra: varje ny hub, utmaning, gym, partner, coach, retreat eller plattformsmedlem ökar räckvidden och påverkan i hela systemet.|CDP doesn\'t sell gym memberships. CDP builds infrastructure for human upgrading. A combined physical, digital, psychological, social and economic ecosystem. 9 behavior engines all reinforcing each other.|CDP no vende membresías. CDP construye infraestructura para la mejora humana. 9 motores de comportamiento.|CDP не продаёт абонементы. CDP строит инфраструктуру для развития людей. 9 поведенческих двигателей.',
+st:'€36K-75K initial hub investment, €180K-320K projected annual café revenue, €9.7K-13.5K monthly OPEX, break-even 18-30 months. Platform costs redan täckta genom bootstrapping.|€36K-75K initial hub, €180K-320K annual café revenue, €9.7K-13.5K monthly OPEX, break-even 18-30mo. Platform costs covered.|€36K-75K inversión inicial, €180K-320K ingresos anuales, €9.7K-13.5K OPEX mensual, break-even 18-30 meses.|€36K-75K начальные инвестиции, €180K-320K годовой доход кафе, €9.7K-13.5K ежемесячные операционные расходы, окупаемость 18-30 месяцев.',
+m:[{l:'Hub Investment',v:'€36-75K',s:'Per location'},{l:'Break-even',v:'18-30 mo',s:'Per hub'},{l:'Revenue engines',v:'9',s:'Active'},{l:'Countries',v:'59',s:'Global reach'}],iv:true},
+
+{id:'community',i:'●●',l:'Community|Community|Comunidad|Сообщество',c:'core',s:'active',
+d:'Den strategiska tillgången. 59 länder. 12 900+ Instagram-följare. 1 276+ publicerade inlägg. Aktiv community på WhatsApp, Skool och sociala medier. Människor kommer för tillhörighet, rytm, ansvar, social kontakt  - fitness är ingången, miljön är produkten, förändringen är utfallet. Word-of-mouth primär tillväxtkanal. Nära noll CAC.|The strategic asset. 59 countries. 12,900+ followers. 1,276+ posts. Active on WhatsApp, Skool and social media. People come for belonging, rhythm, accountability  - fitness is the entry, the environment is the product, change is the outcome.|El activo estratégico. 59 países. 12.900+ seguidores. La gente viene por la pertenencia.|Стратегический актив. 59 стран. 12 900+ подписчиков. Люди приходят ради принадлежности.',
+st:'Community = noll CAC. Retention driven av tillhörighet, inte kontrakt. Varje nytt affärsben lanseras till en varm, lojal publik.',
+m:[{l:'countries',v:'59',s:'Organiskt'},{l:'ig2',v:'12.9K+',s:'Växande'},{l:'members',v:'500+',s:'Lokalt aktiva'},{l:'members',v:'1,276+',s:'IG-inlägg'}],
+tm:[{q:"CDP has given me strength, endurance and the belief that if I give 1% every day, I'll reach my goals.",a:"Janice"},{q:"CDP is like a solar panel for me - without it, my internal battery is empty.",a:"Oskari"},{q:"It's my safe zone. A place I can come to for activities, a chat or advice. It's like my second family.",a:"Sofi"},{q:"CDP saved my life. Without them, I don't know where I'd be.",a:"Alex"},{q:"CDP helped me crawl out of the darkest hole I've ever been in. I am forever grateful.",a:"Gaby"}],
+o:['Ambassador-program|Ambassador program|Programa embajadores|Программа амбассадоров','Referral loops|Referral loops|Bucles de referencia|Реферальные циклы','Lokala chapters|Local chapters|Capítulos locales|Местные отделения','Premium community|Premium community|Comunidad premium|Премиум-сообщество','Global digital membership|Global digital membership|Membresía digital global|Глобальное цифровое членство'],iv:true},
+
+{id:'outdoor_gym',i:'GYM',l:'Outdoor Gym|Outdoor Gym|Gimnasio al Aire Libre|Уличный зал',c:'core',s:'active',
+d:'Kärnverksamhet. Dagliga GRATIS pass vid Acequión Beach, Torrevieja  - 08:00–10:30. 4–6 flerspråkiga tränare (8+ språk). Styrka, military-style (Kirill), yoga (Angela/Michelle), mobility, breathwork, dans, community events. Hundratals per vecka (vinter), tusentals (sommar). 2+ års drift. Noll marketing spend. Medelhavsklimatet = 365 dagars utomhusträning.|Core business. Daily FREE sessions at Acequión Beach, Torrevieja  - 08:00–10:30. 4–6 multilingual trainers (8+ languages). Hundreds weekly (winter), thousands (summer). 2+ years running. Zero marketing spend.|Negocio principal. Sesiones GRATUITAS diarias en Playa del Acequión, Torrevieja.|Основной бизнес. Ежедневные БЕСПЛАТНЫЕ занятия на пляже Acequión, Торревьеха.',
+st:'Gratismodellen = CDP:s mest effektiva marknadsföring. Varje deltagare blir ambassadör, content piece och potentiell betalande kund. Zero-cost acquisition engine.',
+hi:'90-Day Challenge: 100 deltagare × 1 inlägg/dag × 500 följare × 90 dagar = 4.5 MILJONER potentiella organiska impressions.|90-Day Challenge: 100 participants × 1 post/day × 500 followers × 90 days = 4.5 MILLION potential organic impressions.',
+m:[{l:'cw',v:'14+',s:'Dagliga'},{l:'lang',v:'8+',s:'Tränare'},{l:'members',v:'100+',s:'Per pass (sommar)'},{l:'zero',v:'€0',s:'Marketing spend'}],
+o:['Fler pass & tidsluckor|More sessions & time slots','Fler platser längs kusten|More coastal locations','Tiered medlemskap (gratis→premium→VIP)|Tiered memberships','PT|Personal training','Branded gear on-site|Branded gear on-site','Företagsevent|Corporate events'],iv:true},
+
+{id:'classes',i:'▶',l:'Pass & 90-dagars|Classes & 90-Day|Clases y 90 Días|Занятия и 90 дней',c:'core',s:'active',
+d:'Styrka & Conditioning, Beach Bootcamp, Militärinspirerad träning (Kirill), Yoga & Stretch (Angela/Michelle), Mobility & Recovery, Breathwork, Dans & Movement, Community Challenges, 90-dagars transformationsutmaningar. 90-Day Challenge = viral marketing machine + beteendetransformation + dagligt UGC + global partner-exponering.|Strength, Beach Bootcamp, Military (Kirill), Yoga (Angela/Michelle), Mobility, Breathwork, Dance, 90-Day Challenges  - viral marketing + behavior transformation.|Fuerza, Bootcamp, Militar, Yoga, Movilidad, Breathwork, Danza, Desafíos de 90 días.|Сила, Буткемп, Военная подготовка, Йога, Мобильность, Breathwork, Танцы, 90-дневные челленджи.',
+iv:true},
+
+{id:'coaching',i:'◆',l:'Coaching|Coaching|Coaching|Коучинг',c:'core',s:'active',
+d:'High-ticket transformation. Jesper "Captain J" Melin leder personlig coaching  - accountability, mindset, disciplin, struktur. Både on-site och digitalt via Skool. Case studies visar dramatiska resultat: rökstopp, viktnedgång, identitetsskifte, förbättrad mental hälsa, nya livsrutiner.|High-ticket transformation. Jesper "Captain J" Melin leads personal coaching  - accountability, mindset, discipline. Both on-site and digital via Skool. Case studies show dramatic results.|Transformación premium. Coaching personal con Jesper.|Премиум-трансформация. Персональный коучинг с Jesper.',
+st:'Högsta marginalens affärsben. Varje framgångssaga förstärker hela varumärket.',
+tm:[{q:"Jesper has been an incredible guide. His coaching has sharpened my skills and pushed me beyond what I thought was possible.",a:"Kirill"},{q:"The 1-to-1 sessions with the Captain have helped me massively, both physically and mentally.",a:"Harley"},{q:"I started 90-day challenges, quit smoking, became stronger, more resilient.",a:"Angela"},{q:"I feel like I'm starting to realize that what I want in life just takes a few months of consistent action.",a:"Dillon"}],
+o:['Premium 1-on-1 med Captain J|Premium 1-on-1 with Captain J','Digitala 90-dagars program (global)|Digital 90-day programs (global)','Hybrid online/offline|Hybrid online/offline','CDP Coach-certifiering|CDP Coach certification','Corporate leadership|Corporate leadership'],iv:true},
+
+{id:'cabana',i:'HUB',l:'Cabana Beach Bar (Avslutat)|Cabana Beach Bar (Completed)|Cabana Beach Bar (Completado)|Cabana Beach Bar (Завершено)',c:'core',s:'completed',
+d:'PROOF OF CONCEPT  - CDP:s första kommersiella samarbete och beviset på att modellen fungerar. Jesper och Michelle tog en restaurang med noll Google-recensioner och byggde den till femstjärnig betyg genom: community-aktivering, social media-produktion, ny webbplats, IT-system, och hjälp med statliga bidrag. Ägarna säljer nu efter att CDP höjt verksamhetens värde markant. Detta är proof of concept: CDP:s ekosystem skapar mätbart affärsvärde för partners. Hub-modellen är repeterbar.|PROOF OF CONCEPT  - CDP\'s first commercial partnership proving the ecosystem model works. Jesper and Michelle took a restaurant with zero Google reviews and built it to five-star rating through: community activation, social media production, website redesign, IT systems, and government grant assistance. Owners chose to sell after CDP increased business value significantly. This proves: CDP\'s ecosystem creates measurable business value for partners. The Hub model is replicable.|PRUEBA DE CONCEPTO  - primer socio comercial de CDP demostrando que el modelo funciona. Restaurante transformado de cero reseñas a 5 estrellas mediante: activación comunitaria, producción de contenido, sistemas IT, ayuda con subsidios gubernamentales. Los dueños venden después de que CDP aumentara el valor del negocio. Esto prueba: el ecosistema CDP crea valor medible.|ДОКАЗАТЕЛЬСТВО КОНЦЕПЦИИ  - первое коммерческое партнёрство CDP. Ресторан преобразован с нуля отзывов на 5-звёздочный рейтинг. Владельцы продают после того, как CDP повысило стоимость бизнеса. Это доказывает: экосистема CDP создает измеримую ценность.',
+st:'Proof of concept: CDP tog en okänd restaurang och byggde den till topp-rating med community, sociala medier, IT-system, hemsida, statliga bidrag och samarbeten. Bevisar Hub-modellens kraft.|Proof of concept: CDP took an unknown restaurant and built it to top rating through community, social media, IT systems, website, government grants and partnerships. Proves the Hub model works.',
+tm:[{q:"Best food in Torrevieja! Everything done to perfection and the atmosphere sublime.",a:"Google Review"},{q:"The best beach bar at Acequión beach. Very nice people and great tapas.",a:"Google Review"},{q:"Jay and crew provide exceptional food at a fair price. Been back 3 times now.",a:"Visitor from Canada"}],
+m:[{l:'Google Reviews',v:'0 → 5★',s:'Från noll till toppbetyg'},{l:'Resultat',v:'Sålt',s:'Ägarna säljer efter värdeökning'},{l:'Metod',v:'Ekosystem',s:'Community + content + IT + bidrag'},{l:'Status',v:'Avslutat',s:'Proof of concept bekräftad'}],iv:true},
+
+{id:'cdp_club',i:'HUB',l:'CDP.club  - Restaurang & Hub|CDP.club  - Restaurant & Hub|CDP.club  - Restaurante & Hub|CDP.club  - Ресторан & Хаб',c:'core',s:'in_progress',
+d:'CDP.club (Coaches Don\'t Play Club)  - den fysiska lokalen vid Calle Bergantín 4, Torrevieja (f.d. Polka). Restaurang, hub, community-plats och café. SL (Sociedad Limitada) på gång, autónomo på gång, non-profit redan klar. ALLA licenser (alkohol, servering, mat) ingår i Polka-köpet  - plug and play. Launch: 1 maj 2026. CDP.club är den FÖRSTA merchanten i Beach Butler-nätverket (owned-first modell). Inomhus = CDP Hub Café med kiosker + app. Kombination av food, fitness, community och content på en plats. Pris: €90 000 (€10K entry, 4 års payback).|CDP.club (Coaches Don\'t Play Club)  - the physical location at Calle Bergantín 4, Torrevieja (formerly Polka). Restaurant, hub, community space and café. SL being set up. ALL licenses (alcohol, serving, food) included in the Polka purchase  - plug and play. Launch: May 1, 2026. CDP.club is the FIRST merchant in the Beach Butler network (owned-first model). Price: €90,000 (€10K entry, 4-year payback).|CDP.club  - local físico en Calle Bergantín 4, Torrevieja. Restaurante, hub, café. Todas las licencias incluidas. Lanzamiento: 1 mayo 2026.|CDP.club  - физическая локация на Calle Bergantín 4, Торревьеха. Ресторан, хаб, кафе. Все лицензии включены. Запуск: 1 мая 2026.',
+st:'CDP.club = Proof of Concept. Owned-first merchant i Beach Butler. Alla licenser ingår i Polka-köpet. Cambio de titularidad tar 2-4 veckor. €90K investering, 4 års payback. Non-profit redan registrerad.|CDP.club = Proof of Concept. First owned merchant in Beach Butler. All licenses included. €90K investment, 4-year payback.',
+m:[{l:'location',v:'Bergantín 4',s:'Torrevieja'},{l:'rev',v:'€90K',s:'Investering'},{l:'be',v:'4 år',s:'Payback'},{l:'status',v:'1 maj',s:'Launch 2026'}],
+o:['Bowl-first matsystem|Bowl-first food system','Co-working space|Co-working space','Café & smoothie bar|Café & smoothie bar','Content studio|Content studio','Event space|Event space','Kiosk-beställning|Kiosk ordering'],
+bp:[
+{t:'Executive Summary|Executive Summary|Resumen Ejecutivo|Резюме',icon:'01',body:'<div class="bp-stats"><div class="bp-stat"><div class="bp-stat-v">€5,600–8,800</div><div class="bp-stat-l">Setup Cost</div></div><div class="bp-stat"><div class="bp-stat-v">€2,500/mo</div><div class="bp-stat-l">Hyra</div></div><div class="bp-stat"><div class="bp-stat-v">5 veckor</div><div class="bp-stat-l">Till launch</div></div><div class="bp-stat"><div class="bp-stat-v">40–50/dag</div><div class="bp-stat-l">Breakeven</div></div></div><p class="bp-p">Polka-lokalen blir CDP:s första fysiska enhet  - en lean bar/cafeteria som expanderar först efter validering. CDP:s community ger en inbyggd kundbas från dag ett. Noll cold-start.</p><p class="bp-p">Strategiskt värde: permanent plats för events, community, content-produktion, merch, partnerskap  - och bevisar att CDP Club-konceptet är lönsamt och replikerbart.</p>'},
+{t:'Affärskoncept|Business Concept|Concepto de Negocio|Бизнес-концепция',icon:'02',body:'<div class="bp-cards"><div class="bp-card" onclick="this.classList.toggle(\'bp-card-open\')"><div class="bp-card-icon">▾</div><div class="bp-card-t">Bar & Cafeteria</div><div class="bp-card-d">Lean Phase 1: drycker, kaffe, enkel tapas, hälsosamma snacks. Ingen fullskalig restaurang. Minimerar personal, licensering och matsvinn.</div><div class="bp-card-detail">Konceptet bygger på en effektiv, lågkostnads-meny med fokus på kvalitet framför kvantitet. Drycker: specialty-kaffe, smoothies, juicer, vin, öl och cocktails. Mat: tapas, bowls, hälsosamma snacks och säsongsanpassade rätter. Ingen storskalig restaurangverksamhet i Fas 1 - detta minimerar personalbehov, licenskrav och matsvinn. Köksexpansion sker först efter validering i sommarperioden. POS-system med kiosk-beställning och app-integration via Beach Butler.</div></div><div class="bp-card" onclick="this.classList.toggle(\'bp-card-open\')"><div class="bp-card-icon">◐</div><div class="bp-card-t">Utomhusmiljö</div><div class="bp-card-d">Costa del Sol = uteservering är huvudattraktionen. 8-10 månader per år. Komfort, estetik och community-känsla.</div><div class="bp-card-detail">Utomhusmiljön är CDP Clubs viktigaste konkurrensfördel. Torrevieja erbjuder 300+ soldagar per år, vilket möjliggör uteservering 8-10 månader. Designen fokuserar på komfort (bekväma sittplatser, skugga, belysning), estetik (CDP-varumärke, grönska, Medelhavsatmosfär) och gemenskap (gruppvänliga ytor, event-layout). Professionellt musiksystem med noggrant anpassade ljudnivåer - tillräckligt för atmosfär men aldrig störande för grannar eller konversationer. SGAE-licens och bullerregler följs strikt. Målet är Torreviejas bästa utomhusupplevelse - en destination, inte bara ett ställe att äta.</div></div><div class="bp-card" onclick="this.classList.toggle(\'bp-card-open\')"><div class="bp-card-icon">●●</div><div class="bp-card-t">Community Hub</div><div class="bp-card-d">Inte ett vanligt café. Community-ankare. 200+ aktiva medlemmar + content engine som driver fottrafik utan betald annonsering.</div><div class="bp-card-detail">CDP Club är designat som en samlingspunkt för hela ekosystemet. Här möts stamgäster, nya besökare och community-medlemmar. En naturlig samlingsplats för gemenskap och upplevelser. Frukost och kaffe under dagen, events på kvällen. Varje besökare blir en potentiell ambassadör som delar sin upplevelse organiskt. Med 200+ aktiva community-medlemmar och 12 900+ Instagram-följare har CDP en inbyggd kundbas som ingen konkurrent kan replikera.</div></div><div class="bp-card" onclick="this.classList.toggle(\'bp-card-open\')"><div class="bp-card-icon">◆</div><div class="bp-card-t">Proof of Concept</div><div class="bp-card-d">Validering: Fungerar CDP:s community-modell som fysisk hospitality? Lyckas = repeterbar CDP Club-playbook.</div><div class="bp-card-detail">CDP.club är det strategiska testet. Om CDP kan driva en framgångsrik fysisk verksamhet med sin community-first-modell, bekräftar det hela affärstesen. Framgång här innebär att modellen kan replikeras i andra kuststäder. Varje ny location använder samma playbook: community-aktivering, content-produktion, event-hosting och ekosystem-integration. Mätbara milstolpar: breakeven inom 3 månader, positiv marginal från månad 4, validerad meny och drift efter 12 månaders granskning.</div></div></div>'},
+{t:'Rollout & Launch|Rollout & Launch|Lanzamiento|Запуск',icon:'03',body:'<div class="bp-timeline"><div class="bp-tl-item"><div class="bp-tl-week">V1</div><div class="bp-tl-body"><div class="bp-tl-title">Reset & Städning</div><div class="bp-tl-desc">Djuprengöring, ta bort tidigare hyresgästs inventarier, dokumentera skick, identifiera reparationer.</div></div></div><div class="bp-tl-item"><div class="bp-tl-week">V2</div><div class="bp-tl-body"><div class="bp-tl-title">Miljö & Setup</div><div class="bp-tl-desc">Uteservering, belysning, skyltar, möbler, CDP-estetik.</div></div></div><div class="bp-tl-item"><div class="bp-tl-week">V3</div><div class="bp-tl-body"><div class="bp-tl-title">Rebranding</div><div class="bp-tl-desc">Ta bort Polka-identitet. CDP Club-varumärke. Skyltar, menyer, Google Maps.</div></div></div><div class="bp-tl-item"><div class="bp-tl-week">V4</div><div class="bp-tl-body"><div class="bp-tl-title">Administration</div><div class="bp-tl-desc">Bolagsregistrering, bankkonto, POS/betalning, bokföring, leverantörer.</div></div></div><div class="bp-tl-item bp-tl-launch"><div class="bp-tl-week">V5</div><div class="bp-tl-body"><div class="bp-tl-title">★ Launch</div><div class="bp-tl-desc">Soft opening med community. Feedback. Justering. Officiell öppning.</div></div></div></div><div class="bp-sub">År 1 Milstolpar</div><div class="bp-milestones"><div class="bp-ms"><span class="bp-ms-date">Maj 2026</span><span class="bp-ms-text">Lean launch  - bar, kaffe, enkel tapas</span></div><div class="bp-ms"><span class="bp-ms-date">Jun–Aug</span><span class="bp-ms-text">Sommarvalidering, menyutveckling, köksexpansion om godkänt</span></div><div class="bp-ms"><span class="bp-ms-date">Sep–Nov</span><span class="bp-ms-text">Lågsäsongstest, året-runt-livsduglighet</span></div><div class="bp-ms"><span class="bp-ms-date">Dec–Apr</span><span class="bp-ms-text">Fullständig granskning. Fortsätt, expandera eller pivotera.</span></div></div>'},
+{t:'Marknad & Position|Market & Position|Mercado y Posición|Рынок и позиция',icon:'04',body:'<p class="bp-p"><strong>Torrevieja är Spaniens snabbast växande stad.</strong> Borgmästaren har uttalat ambitionen att göra Torrevieja till Spaniens främsta sportstad. CDP är perfekt positionerat i denna tillväxt  - differentiering kommer inte från menyn, utan från ekosystemet.</p><div class="bp-cards"><div class="bp-card"><div class="bp-card-icon">▣</div><div class="bp-card-t">Community-driven</div><div class="bp-card-d">Aktiv, lojalitetsdriven gemenskap som besöker regelbundet och tar med nya via word-of-mouth.</div></div><div class="bp-card"><div class="bp-card-icon">▶</div><div class="bp-card-t">Content Engine</div><div class="bp-card-d">Organisk digital synlighet  - venue som destination, inte bekvämlighetsställe.</div></div><div class="bp-card"><div class="bp-card-icon">★</div><div class="bp-card-t">Lifestyle-brand</div><div class="bp-card-d">Hälsa, disciplin, livsstil  - växande hälsomedveten demografi.</div></div><div class="bp-card"><div class="bp-card-icon">⊕</div><div class="bp-card-t">Nätverkseffekt</div><div class="bp-card-d">Events, varumärke och social media = flera anledningar till återbesök.</div></div></div><div class="bp-sub">Kundsegment</div><div class="bp-segments"><div class="bp-seg"><div class="bp-seg-bar" style="width:45%"></div><div class="bp-seg-label">CDP Community <span>40–50%</span></div></div><div class="bp-seg"><div class="bp-seg-bar" style="width:25%"></div><div class="bp-seg-label">Hälsomedvetna Expats <span>20–30%</span></div></div><div class="bp-seg"><div class="bp-seg-bar" style="width:17%"></div><div class="bp-seg-label">Lokala invånare <span>15–20%</span></div></div><div class="bp-seg"><div class="bp-seg-bar" style="width:12%"></div><div class="bp-seg-label">Walk-in / Turister <span>10–15%</span></div></div></div><div class="bp-quote">En konkurrent kan kopiera menyn men kan inte kopiera 200+ aktiva community-medlemmar, Instagram-följarskaran eller eventkalendern.</div>'},
+{t:'Team & Roller|Team & Roles|Equipo y Roles|Команда и роли',icon:'05',body:'<div class="bp-team"><div class="bp-member"><div class="bp-member-name">Michelle</div><div class="bp-member-role">Owner / Operator</div><div class="bp-member-scope">Daglig drift, kundupplevelse, leverantörer, on-site ledarskap</div><div class="bp-member-comp">€1,500/mo</div></div><div class="bp-member"><div class="bp-member-name">Dhaval</div><div class="bp-member-role">Ekonomi & Bokföring</div><div class="bp-member-scope">Bokföring, skatt, compliance, finansrapportering</div><div class="bp-member-comp">€1,200–1,500/mo</div></div><div class="bp-member"><div class="bp-member-name">Sanna</div><div class="bp-member-role">Content & Brand</div><div class="bp-member-scope">Social media, foto/video, varumärke, marknadsföring</div><div class="bp-member-comp">€1,200–1,500/mo</div></div><div class="bp-member"><div class="bp-member-name">Jesper</div><div class="bp-member-role">Business Development</div><div class="bp-member-scope">Strategisk riktning, partnerskap, investerarrelationer, ekosystem</div><div class="bp-member-comp">€1,000–1,500/mo</div></div></div><p class="bp-note"><strong>Varför är teamkostnaderna låga?</strong> CDP är ett familjeägt koncept med en stark community-driven modell. Teamet drivs av passion, delägarskap och gemensam passion för projektet  - inte av marknadsmässiga löner. Varje teammedlem har multipla roller och bidrar brett till verksamheten. Det gör att vi kan hålla nere fasta kostnader utan att kompromissa på kvalitet. Siffrorna är uppskattningar. Struktur ej fastställd (anställd, autónomo eller tjänsteavtal). Spansk arbetsgivaravgift tillkommer ~30–35%.</p>'},
+{t:'Ekonomi & Finanser|Economy & Finance|Economía y Finanzas|Экономика и финансы',icon:'06',body:'<div class="bp-sub">Setup-kostnader</div><div class="bp-costs"><div class="bp-cost-item"><span>Djuprengöring</span><span class="bp-cost-v">€500–800</span></div><div class="bp-cost-item"><span>Utemöbler & setup</span><span class="bp-cost-v">€1,500–2,000</span></div><div class="bp-cost-item"><span>Inredning</span><span class="bp-cost-v">€1,000–1,500</span></div><div class="bp-cost-item"><span>Skyltar & branding</span><span class="bp-cost-v">€500–800</span></div><div class="bp-cost-item"><span>POS-system</span><span class="bp-cost-v">€300–500</span></div><div class="bp-cost-item"><span>Initialt lager</span><span class="bp-cost-v">€800–1,200</span></div><div class="bp-cost-item"><span>Admin & juridik</span><span class="bp-cost-v">€500–1,000</span></div><div class="bp-cost-item"><span>Reserv</span><span class="bp-cost-v">€500–1,000</span></div><div class="bp-cost-total"><span>TOTALT SETUP</span><span class="bp-cost-v">€5,600–8,800</span></div></div><div class="bp-sub">Månatliga fasta kostnader</div><div class="bp-costs"><div class="bp-cost-item"><span>Hyra</span><span class="bp-cost-v">€2,500</span></div><div class="bp-cost-item"><span>Team (4 pers)</span><span class="bp-cost-v">€4,900–6,000</span></div><div class="bp-cost-item"><span>Utilities</span><span class="bp-cost-v">€400–600</span></div><div class="bp-cost-item"><span>Försäkring</span><span class="bp-cost-v">€150–250</span></div><div class="bp-cost-item"><span>Bokföring/gestor</span><span class="bp-cost-v">€200–350</span></div><div class="bp-cost-item"><span>Övrigt</span><span class="bp-cost-v">€510–980</span></div><div class="bp-cost-total"><span>TOTALT/MÅNAD</span><span class="bp-cost-v">€8,660–10,680</span></div></div><div class="bp-sub">Intäktsscenarier</div><div class="bp-scenarios"><div class="bp-scenario bp-sc-caution"><div class="bp-sc-name">Försiktig</div><div class="bp-sc-detail">30–40 kunder/dag × €8–10</div><div class="bp-sc-rev">€7,200–12,000/mo</div><div class="bp-sc-margin">Marginal: −€1,460 till +€1,340</div></div><div class="bp-scenario bp-sc-base"><div class="bp-sc-name">Basfall</div><div class="bp-sc-detail">50–65 kunder/dag × €10–12</div><div class="bp-sc-rev">€15,000–23,400/mo</div><div class="bp-sc-margin">Marginal: +€4,320 till +€12,720</div></div><div class="bp-scenario bp-sc-up"><div class="bp-sc-name">Uppsida</div><div class="bp-sc-detail">75–90 kunder/dag × €12–15</div><div class="bp-sc-rev">€27,000–40,500/mo</div><div class="bp-sc-margin">Marginal: +€16,320 till +€29,820</div></div></div><p class="bp-note">COGS: 25–35%. Breakeven: ~€12,400–15,300/mo ≈ 40–50 kunder/dag. IVA 10% på mat/dryck.</p><div class="bp-sub">Framtida tillväxtstrategier</div><div class="bp-cards"><div class="bp-card"><div class="bp-card-icon">▲</div><div class="bp-card-t">Event-intäkter</div><div class="bp-card-d">Wine tastings, Swedish dinners, julbord, nyår och lördagsfester driver extra intäkter utöver daglig drift.</div></div><div class="bp-card"><div class="bp-card-icon">▲</div><div class="bp-card-t">Beach Butler-integration</div><div class="bp-card-d">CDP.club som första merchant i Beach Butler-nätverket öppnar ny leveranskanal till stränder.</div></div><div class="bp-card"><div class="bp-card-icon">▲</div><div class="bp-card-t">Merch & Private Label</div><div class="bp-card-d">Egna produkter (kaffe, smoothie-mix, kläder) säljs on-site med hög marginal.</div></div><div class="bp-card"><div class="bp-card-icon">▲</div><div class="bp-card-t">Catering & Takeaway</div><div class="bp-card-d">Catering till events, företag och privatpersoner adderar intäkter utöver den dagliga restaurangverksamheten.</div></div></div>'},
+{t:'Investering|Investment|Inversión|Инвестиции',icon:'07',body:'<div class="bp-invest-total"><div class="bp-invest-amount">€20,000–30,000</div><div class="bp-invest-label">Totalt kapitalbehov</div></div><div class="bp-costs"><div class="bp-cost-item"><span>Setup & renovering</span><span class="bp-cost-v">€5,600–8,800</span></div><div class="bp-cost-item"><span>Driftbudget (3 mån)</span><span class="bp-cost-v">€10,000–15,000</span></div><div class="bp-cost-item"><span>Rörelsekapital & reserv</span><span class="bp-cost-v">€4,000–6,000</span></div></div><div class="bp-sub">Riskreducering</div><div class="bp-cards bp-cards-sm"><div class="bp-card"><div class="bp-card-icon">₵</div><div class="bp-card-d">Låg initial investering vs nybygge</div></div><div class="bp-card"><div class="bp-card-icon">⊡</div><div class="bp-card-d">Befintlig lokal  - ingen byggrisk</div></div><div class="bp-card"><div class="bp-card-icon">●●</div><div class="bp-card-d">Inbyggd kundbas  - inget cold-start</div></div><div class="bp-card"><div class="bp-card-icon">KPI</div><div class="bp-card-d">Fasad expansion  - inkrementellt</div></div><div class="bp-card"><div class="bp-card-icon">✓</div><div class="bp-card-d">12 mån validering med review gates</div></div><div class="bp-card"><div class="bp-card-icon">◎</div><div class="bp-card-d">Validerar CDP Club-modellen</div></div></div><div class="bp-quote">Kassaflödes-breakeven inom 2–3 månader. Positiv marginal från månad 4. ROI inom 8–14 månader.</div>'},
+{t:'Legal & Compliance|Legal & Compliance|Legal y Cumplimiento|Юридические вопросы',icon:'08',body:'<div class="bp-checklist"><div class="bp-check"><span class="bp-check-status">⏳</span><div><div class="bp-check-item">Bolagsstruktur (SL/autónomo)</div><div class="bp-check-who">Gestor / Dhaval</div></div></div><div class="bp-check"><span class="bp-check-status">⏳</span><div><div class="bp-check-item">Verksamhetslicens (licencia de actividad)</div><div class="bp-check-who">Gestor / Michelle</div></div></div><div class="bp-check"><span class="bp-check-status">⏳</span><div><div class="bp-check-item">Livsmedelshantering (registro sanitario)</div><div class="bp-check-who">Michelle / personal</div></div></div><div class="bp-check"><span class="bp-check-status">⏳</span><div><div class="bp-check-item">Terrasslov</div><div class="bp-check-who">Gestor</div></div></div><div class="bp-check"><span class="bp-check-status">⏳</span><div><div class="bp-check-item">Brand & säkerhet</div><div class="bp-check-who">Gestor</div></div></div><div class="bp-check"><span class="bp-check-status">⏳</span><div><div class="bp-check-item">Musik/buller (SGAE-licens)</div><div class="bp-check-who">Gestor / Michelle</div></div></div><div class="bp-check"><span class="bp-check-status">⏳</span><div><div class="bp-check-item">Arbetsavtal</div><div class="bp-check-who">Asesoría laboral</div></div></div><div class="bp-check"><span class="bp-check-status">⏳</span><div><div class="bp-check-item">Skatteregistrering (alta censal, IAE)</div><div class="bp-check-who">Asesoría fiscal</div></div></div><div class="bp-check"><span class="bp-check-status">⏳</span><div><div class="bp-check-item">Dataskydd (GDPR/LOPD)</div><div class="bp-check-who">Dhaval</div></div></div><div class="bp-check"><span class="bp-check-status">⏳</span><div><div class="bp-check-item">Försäkring</div><div class="bp-check-who">Gestor / Michelle</div></div></div><div class="bp-check"><span class="bp-check-status">⏳</span><div><div class="bp-check-item">Hyresavtal</div><div class="bp-check-who">Juridisk rådgivare</div></div></div></div>'},
+{t:'Trygghet & Säkring|Risk & Mitigation|Riesgos y Mitigación|Риски и снижение',icon:'09',body:'<div class="bp-risks"><div class="bp-risk"><div class="bp-risk-head"><span class="bp-risk-name">Licensförseningar</span><span class="bp-risk-badge bp-risk-med">Medel / Hög</span></div><div class="bp-risk-mit">Anlita gestor direkt. Starta med bar-only. Köksexpansion väntar på godkännande.</div></div><div class="bp-risk"><div class="bp-risk-head"><span class="bp-risk-name">Intäkter under breakeven</span><span class="bp-risk-badge bp-risk-med">Medel / Hög</span></div><div class="bp-risk-mit">Lean kostnad. 3 mån runway. Meny/tider-justering. Community-aktivering.</div></div><div class="bp-risk"><div class="bp-risk-head"><span class="bp-risk-name">Säsongsvariation</span><span class="bp-risk-badge bp-risk-high">Hög / Medel</span></div><div class="bp-risk-mit">Kostnadsreduktion lågsäsong. Diversifiera med events. Bygg lokal stamkundsbas.</div></div><div class="bp-risk"><div class="bp-risk-head"><span class="bp-risk-name">Nyckelpersonberoende</span><span class="bp-risk-badge bp-risk-med">Medel / Medel</span></div><div class="bp-risk-mit">Korsutbilda. Dokumentera rutiner. Undvik single points of failure.</div></div><div class="bp-risk"><div class="bp-risk-head"><span class="bp-risk-name">Hyresrisk</span><span class="bp-risk-badge bp-risk-low">Låg / Hög</span></div><div class="bp-risk-mit">Säkra bra villkor. Begränsa initial investering.</div></div></div>'},
+{t:'Expansion|Expansion|Expansión|Расширение',icon:'10',body:'<div class="bp-expand"><div class="bp-exp-item"><div class="bp-exp-mod">Köksexpansion</div><div class="bp-exp-time">År 1</div></div><div class="bp-exp-item"><div class="bp-exp-mod">Event-program</div><div class="bp-exp-time">År 1</div></div><div class="bp-exp-item"><div class="bp-exp-mod">Catering & Delivery</div><div class="bp-exp-time">År 1–2</div></div><div class="bp-exp-item"><div class="bp-exp-mod">Merch & Private Label</div><div class="bp-exp-time">År 2</div></div><div class="bp-exp-item"><div class="bp-exp-mod">Fler Locations</div><div class="bp-exp-time">År 3+</div></div><div class="bp-exp-item"><div class="bp-exp-mod">Franchise-modell</div><div class="bp-exp-time">År 3+</div></div></div><div class="bp-sub">CDP Club-modellen</div><p class="bp-p">Varje CDP Club kombinerar: <strong>Hospitality</strong> (café/bar/restaurang) + <strong>Community</strong> (events, gemenskap, upplevelser) + <strong>Commerce</strong> (merch, private label, catering). Konceptet är designat för kapitaleffektiv replikering i kust- och livsstilsmarknader.</p>'}
+],iv:true},
+
+{id:'cdp_gym',i:'FIT',l:'CDP Gym (Separat)|CDP Gym (Separate)|CDP Gym (Separado)|CDP Gym (Отдельный)',c:'core',s:'planned',
+d:'CDP Gym  - separat entitet och separat del av lokalen vid Calle Bergantín 4. Företagsmässigt och fysiskt uppdelat från CDP.club-restaurangen. 200 kvm gym-yta. Fullt utrustad gym + community space. Baserat på alla lärdomar från det gratis outdoor gym som CDP drivit i 2+ år. Blir CDP:s flaggskepps-indoor-gym  - komplement till det befintliga gratis outdoor gym vid stranden. Separat bolag, separat yta, men integrerat i CDP-ekosystemet.|CDP Gym  - separate entity and separate part of the location at Calle Bergantín 4. Separate company and physically divided from the CDP.club restaurant. 200 sqm gym area. Fully equipped gym + community space. Based on all lessons from 2+ years of free outdoor gym. Separate company but integrated in the CDP ecosystem.|CDP Gym  - entidad separada en Calle Bergantín 4. 200 m² de gimnasio. Empresa separada pero integrada en el ecosistema CDP.|CDP Gym  - отдельная сущность на Calle Bergantín 4. 200 м² зал. Отдельная компания, интегрированная в экосистему CDP.',
+st:'Separat bolag + separat lokal = tydlig juridisk och operativ separation. Gymmet kompletterar outdoor gym och ger year-round träning oberoende av väder.|Separate company + separate space = clear legal and operational separation. Complements outdoor gym with year-round weather-independent training.',
+m:[{l:'location',v:'Bergantín 4',s:'200 kvm'},{l:'type',v:'Indoor Gym',s:'Separat bolag'},{l:'status',v:'Planerat',s:'2026'}],
+o:['Fullt utrustat gym|Fully equipped gym','Medlemskap (gratis→premium)|Memberships','PT & gruppträning|PT & group training','24/7 access|24/7 access'],iv:true},
+
+{id:'retreats',i:'RT',l:'Retreats|Retreats|Retiros|Ретриты',c:'growth',s:'active',
+d:'Premium multi-dagars reset retreats. Träning, yoga, nervsystemsarbete, gemenskap, planerade måltider, natur. UTSÅLDA utan reklam  - enbart community word-of-mouth. Revenue-modell: €500-1,500 per deltagare, 15-30 deltagare per retreat. 4 retreats per år = €30K-180K årlig intäkt. Extremt hög marginal (60-80%) då faciliteter hyrs temporärt och tränare redan finns i teamet. Retreat-deltagare har 3x högre sannolikhet att bli långsiktiga betalande medlemmar. Varje retreat genererar 50+ content pieces. High-margin transformation + loyalty engine + content documentation.|Premium multi-day reset retreats. Fitness, yoga, nervous system work, community, planned meals, nature. SOLD OUT without advertising  - community word-of-mouth only. Revenue model: €500-1,500 per participant, 15-30 per retreat. 4 retreats/year = €30K-180K annual revenue. Very high margin (60-80%) since facilities are rented temporarily and trainers are already on the team. Retreat participants are 3x more likely to become long-term paying members. Each retreat generates 50+ content pieces.|Retiros premium de varios días. AGOTADOS sin publicidad.|Премиум многодневные ретриты. РАСПРОДАНЫ без рекламы.',
+st:'Högsta revenue per deltagare. Starkaste content. Djupaste relationerna. Starkaste ambassadörerna.',
+m:[{l:'Revenue/retreat',v:'€7.5-45K',s:'Per event'},{l:'Margin',v:'60-80%',s:'High-margin'},{l:'Participants',v:'15-30',s:'Per retreat'},{l:'Annual',v:'€30-180K',s:'4 retreats/year'}],
+o:['Kvartalsvisa retreats (4/år)|Quarterly retreats','Tematiska: Disciplin, Reset, Leadership|Themed retreats','Partner-retreats med lokala venues|Partner retreats','Branded retreat-produkter|Branded retreat products'],iv:true},
+
+{id:'digital',i:'DIG',l:'Digital Plattform|Digital Platform|Plataforma Digital|Цифровая платформа',c:'growth',s:'in_progress',
+d:'Tvålagersplattform under utveckling. Layer 1: Public landing page. Layer 2: Subscription-gated community (€19-199/mån). Roller: Member, Coach Mini (33% rev share till CDP), Coach (15%), Brand. Features: events, courses, marketplace, chat, habit tracking, referral system, dashboards. Tech: Supabase + TypeScript. MVP lanserad Dec 2025. Partner: Nautics Technologies OU (Estland).|Two-layer platform in development. Layer 1: Public. Layer 2: Subscription community (€19-199/mo). Roles: Member, Coach Mini (33% rev share), Coach (15%), Brand. MVP launched Dec 2025.|Plataforma de dos capas en desarrollo. €19-199/mes.|Двухуровневая платформа в разработке. €19-199/мес.',
+st:'€19/mån × global community i 59 länder = massiv skalningspotential. Varje roll skapar revenue: Coach Mini betalar 33% rev share, Coach 15%.',
+m:[{l:'countries',v:'59',s:'Digital reach'},{l:'rev',v:'€19',s:'/mån'},{l:'team',v:'Nautics',s:'Tech partner'}],
+o:['Global digital-only membership|Global digital membership','On-demand program|On-demand programs','AI-driven coaching|AI coaching assistant','Investor dashboard|Investor dashboard','CDP Coin-ekonomi|CDP Coin economy'],iv:true},
+
+{id:'content',i:'▷',l:'Content Engine|Content Engine|Motor de Contenido|Контент-движок',c:'growth',s:'active',
+d:'1 276+ publicerade IG-inlägg. Sanna (filmskola) leder content strategy. Varje pass → 3-5 content pieces. Varje event → 10-20. Varje retreat → 50+. 90-Day Challenge: 100 deltagare × 90 dagar = 4.5M impressions. Community genererar UGC automatiskt. Event hosting skapar massivt content  - wine tastings, Swedish dinners, fester. YouTube-dokuserie planerad.|1,276+ IG posts. Sanna leads content strategy. Every session → 3-5 pieces. 90-Day Challenge = 4.5M impressions potential. Event hosting creates massive content  - wine tastings, dinners, parties. YouTube documentary series planned.|Más de 1.276 posts. Cada sesión → 3-5 piezas. El event hosting genera contenido masivo.|Ивент-хостинг создаёт массивный контент. Документальный YouTube-сериал.',
+st:'Content flywheel med nollkostnad. Varje pass skapar content → attraherar nya → de skapar mer content.',
+m:[{l:'ig2',v:'1,276+',s:'Publicerade inlägg'},{l:'ig2',v:'12.9K',s:'Followers'}],iv:true},
+
+{id:'partnerships',i:'⬡',l:'Partnerskap|Partnerships|Asociaciones|Партнёрства',c:'growth',s:'active',
+d:'Aktivt ekosystem av lokala och regionala partners som CDP samarbetar med på gemensamma tillväxtvillkor. Sagoro (joint events, studentutbyte), padel-centers (community events), golfklubbar (content & video), wine tasting (event hosting), barbershops (video-produktion), restauranger (content & community), Svensk Skolan (school partnership), caféer (activation). CDP driver försäljning, content och varumärkesvärde för partners genom sin community på 59 länder. Partner Network = en av 9 behavior engines.|Active partnership network across Torrevieja/Costa Blanca. Sagoro (joint events, student exchange), padel centers (community events), golf clubs (content & video production), wine tasting (large guest events), barbershops (video content), restaurants (content & community), Svensk Skolan (school collab), cafés (activation). Partners gain exposure to engaged international community, content production, and revenue opportunities. Partner Network = one of 9 behavior engines.|Red activa de socios locales. Sagoro, centros de pádel, clubes de golf, catas de vino, peluquerías, restaurantes, Colegio Sueco, cafés. CDP proporciona producción de contenido, activación comunitaria y crecimiento de ventas. Socios acceden a comunidad de 59 países.|Активная сеть партнёров. Sagoro, центры паделя, гольф-клубы, винотастинги, парикмахерские, рестораны, шведская школа, кафе. CDP обеспечивает контент, активацию и рост продаж.',
+pt:['Sagoro Surf School','Padel Centers (Torrevieja)','Costa Blanca Golf Clubs','Wine Tasting Events','Barbershops (Torrevieja)','Restaurants','Svensk Skolan','Cafés & Coffee','Oceanflyers'],
+o:['Revenue share-modeller|Revenue share models','Co-branded events|Co-branded events','Hotellsamarbeten|Hotel partnerships','Corporate wellness|Corporate wellness','Brand activations|Brand activations'],iv:true},
+
+{id:'sponsors',i:'SP',l:'Sponsor Pipeline|Sponsor Pipeline|Pipeline de Sponsors|Спонсорский пайплайн',c:'growth',s:'in_progress',
+d:'Systematisk pipeline för sponsors. 90-Day Challenge ger massiv exponering: 4.5M+ organiska impressions per omgång. Sponsorer får plats i deltagarnas dagliga content. CRM-logik med outreach och uppföljning.|Systematic sponsor pipeline. 90-Day Challenge delivers massive exposure: 4.5M+ organic impressions per round.|Pipeline sistemático. El desafío de 90 días genera 4.5M+ impresiones orgánicas.|Систематический пайплайн. 90-дневный челлендж = 4.5M+ органических показов.',
+iv:false},
+
+{id:'beach_butler',i:'BB',l:'Beach Butler|Beach Butler|Beach Butler|Beach Butler',c:'growth',s:'in_progress',
+d:'SEPARAT TECH-PLATTFORM  - marketplace/delivery-layer för stränder. "Show up with nothing, have everything." On-demand mat, dryck och utrustning (parasoll, stolar, handdukar) direkt till strandplatsen via app/webb/kiosk. Bowl-first matsystem (<30 sek assembly, inga seed oils). Tre intents: Äta & Dricka, Forgot Everything, Beach Setup. SEPARAT BOLAG från CDP.club. CDP.club är FÖRSTA merchant (owned-first), sedan curated external partners. Pilot: Torrevieja, juni 2026. Tech: PWA-first, Node.js/Fastify/PostgreSQL/React, Stripe. €150-180K Year 1 investering. Break-even månad 4-6.|SEPARATE TECH PLATFORM  - marketplace/delivery layer for beaches. "Show up with nothing, have everything." On-demand food, drinks and equipment delivered to your beach spot. Bowl-first food system. Three intents: Eat & Drink, Forgot Everything, Beach Setup. SEPARATE COMPANY from CDP.club. CDP.club is FIRST merchant (owned-first). Pilot: Torrevieja, June 2026. €150-180K Year 1 investment. Break-even month 4-6.|PLATAFORMA TECH SEPARADA  - marketplace para playas. "Llega sin nada, ten todo." Comida, bebidas y equipo bajo demanda. Piloto: Torrevieja, junio 2026.|ОТДЕЛЬНАЯ ТЕХ-ПЛАТФОРМА  - маркетплейс для пляжей. Еда, напитки и оборудование по запросу. Пилот: Торревьеха, июнь 2026.',
+st:'Beach Butler = ren tech-plattform. Runners anställs av MERCHANTEN (CDP.club), inte av BB. Undviker Ley Rider. Franchise-modell: Tier 1 (food truck €500/mån + 5%) → Tier 2 (full flagship €3K/mån + 8%). TAM strand-mat Europa: €1.6-2.4B/år.|Beach Butler = pure tech platform. Runners employed by MERCHANT, not BB. Avoids Ley Rider. Franchise model: Tier 1 (food truck) → Tier 2 (full flagship). TAM beach food Europe: €1.6-2.4B/year.',
+m:[{l:'rev',v:'€93-144K',s:'År 1 (adj.)'},{l:'rev',v:'€150-180K',s:'Investering'},{l:'be',v:'4-6',s:'Månader'},{l:'team',v:'9 agenter',s:'AI-team'}],
+tm:[{q:"Owned-first är rätt. Att bevisa konceptet själv innan marketplace öppnas eliminerar den vanligaste dödsorsaken för plattformsstartups.",a:"Bengt, CEO Review"},{q:"Bowl-first matsystemet är operativt briljant. Scoop-scoop-top-pump. Ingen kokkonst. 27+ kombinationer med ~12 ingredienser. Det är IKEA-logik i köket.",a:"Bengt, CEO Review"},{q:"No seed oils som princip ger en tydlig positionering mot varje chiringuito i Spanien. Det är inte bara hälsa  - det är brand.",a:"Bengt, CEO Review"}],
+pt:['Linnéa  - CTO (MVP-build)','Nils  - Head of Brand & Design','Maja  - Produktchef (meny/bowls)','Gunnar  - CFO (businessplan)','Sanna  - COO (drift/logistik)','Tomas  - Head of Legal','Freja  - Marketing & Content','Oscar  - Ideas & Innovation','Bengt  - CEO (strategi)'],
+o:['Franchise Tier 1: Food Trucks|Franchise Tier 1: Food Trucks','Franchise Tier 2: Full CDP Flagship|Franchise Tier 2: Flagships','Multi-strand expansion|Multi-beach expansion','Marketplace öppning|Marketplace opening','Equipment rental skalning|Equipment rental scaling','CDP Coin-integration|CDP Coin integration'],iv:true},
+
+
+{id:'merch',i:'M',l:'Merchandise|Merchandise|Merchandising|Мерч',c:'expansion',s:'planned',
+d:'Aktiv merch-butik på coachesdontplay.net  - outerwear, kläder, accessoarer. Även på Redbubble. Framtida strategi: limited drops, member exclusives, seasonal collections, co-branded collabs. Distribution via Cabana, Beach Butler och framtida hubbar.|Active merch store at coachesdontplay.net. Future: limited drops, member exclusives, seasonal collections. Distribution via Cabana, Beach Butler and future hubs.|Tienda activa en coachesdontplay.net. Futuro: drops limitados, exclusivos.|Активный мерч-магазин. Планы: лимитированные дропы, эксклюзив для участников.',
+iv:true},
+
+{id:'private_label',i:'PL',l:'Private Label|Private Label|Marca Propia|Собственные бренды',c:'expansion',s:'future',
+d:'Egna varumärken: kaffe, funktionsdrycker, protein, snacks, meal prep, kläder, solglasögon, wellness. Testas på varm community → feedback → content → distribution via alla CDP-kanaler. Cabana Beach Bar = perfekt testmiljö.|Own brands: coffee, drinks, protein, snacks, apparel, wellness. Tested on warm community → feedback → content → distribution through all CDP channels. Cabana = perfect test environment.|Marcas propias: café, bebidas, proteínas, ropa. Cabana = entorno de prueba perfecto.|Собственные бренды: кофе, напитки, протеин, одежда. Cabana = идеальная тестовая среда.',
+iv:true},
+
+{id:'future_hubs',i:'⊕',l:'Framtida Hubbar|Future Hubs|Centros Futuros|Будущие хабы',c:'expansion',s:'future',
+d:'Kustnära expansion: Alicante, Málaga, Marbella, Valencia, Barcelona, Kanarieöarna → Portugal, Grekland, Italien, Kroatien → Bali, Miami, Dubai, Thailand. Varje hub = community center + retail + events + content studio. Turister tar CDP digitalt hem = global expansion utan marknadsföringskostnad.|Coastal expansion: Spain → Portugal, Greece, Italy → Bali, Miami, Dubai. Every tourist takes CDP home digitally = zero-cost global expansion.|Expansión costera: España → Portugal, Grecia, Italia → Bali, Miami, Dubai.|Прибрежная экспансия: Испания → Португалия, Греция → Бали, Майами, Дубай.',
+st:'En hub = en global konverteringsnod. Turister tar med sig CDP digitalt hem. Internationell expansion utan marknadsföringskostnad.',
+iv:true},
+
+{id:'food_bev',i:'F&B',l:'Food & Beverage|Food & Beverage|Comida y Bebida|Еда и напитки',c:'expansion',s:'active',
+d:'REDAN LIVE via Cabana Beach Bar! Hälsosam premium-mat, smoothie bowls, protein shakes, burgare, tapas, kaffe. Femstjärniga omdömen. Integreras med Beach Butler och framtida hubbar. Cabana = proof of concept för CDP food-konceptet.|ALREADY LIVE via Cabana Beach Bar! Healthy premium food, smoothie bowls, protein shakes, burgers, tapas, coffee. Five-star reviews. Integrates with Beach Butler and future hubs.|¡YA EN FUNCIONAMIENTO via Cabana Beach Bar! Comida premium saludable.|УЖЕ РАБОТАЕТ через Cabana Beach Bar! Здоровая премиум-еда.',
+iv:true},
+
+{id:'central_kitchen',i:'CK',l:'Centralkök|Central Kitchen|Cocina Central|Центральная кухня',c:'expansion',s:'future',
+d:'Infrastrukturlager vid volym. Centraliserad prep för flera enheter, standardisering, private label food-produkter, stöd till Beach Butler, catering till events och retreats.|Infrastructure layer at volume. Centralized prep, standardization, private label food products, Beach Butler support, event catering.|Capa de infraestructura a volumen.|Инфраструктурный слой при масштабе.',
+iv:true},
+
+{id:'cdp_coin',i:'₵',l:'CDP Coin|CDP Coin|CDP Coin|CDP Coin',c:'expansion',s:'future',
+d:'Framtida cirkulär ekonomi. Beteendeförstärkning, retention, rabatter, earn-through-community. Coaches och members tjänar inom systemet. Intern marknadsplats, mikrobetalningar, cross-border kompatibilitet. Merchant-acceptance hos partners.|Future circular economy. Behavior reinforcement, retention, discounts, earn-through-community. Internal marketplace, micropayments.|Economía circular futura. Refuerzo de comportamiento, retención, mercado interno.|Будущая циклическая экономика. Поведенческое подкрепление, внутренний рынок.',
+iv:true},
+
+{id:'ai_dept',i:'AI',l:'AI Department|AI Department|Departamento IA|Отдел ИИ',c:'expansion',s:'future',
+d:'Afterburner i Jet Engine-modellen. Automatiserar onboarding, retention, transformation. Standardiserar processer, reducerar operationskostnad, accelererar content pipeline, möjliggör internationell skalning. Coin-logik och personliga rekommendationer.|The afterburner. Automates onboarding, retention, transformation. Reduces cost, accelerates content pipeline, enables international scaling.|El postcombustión. Automatiza onboarding, retención, transformación.|Форсажная камера. Автоматизирует онбординг, удержание, трансформацию.',
+iv:true},
+
+{id:'impact',i:'♡',l:'Non-Profit / Coaches Foundation|Non-Profit / Coaches Foundation|Fundación|Фонд',c:'support',s:'active',
+d:'STRATEGISK KRAFTMULTIPLIKATOR  - inte separerat, utan integrerat. Registrerad non-profit, redan operativ. Driver gratis outdoor gym, public health, retreat-stipendier, ungdomsstöd, mental hälsa, Final Wish-cases, community events. Möjliggör EU-bidrag, NGO-mediegoodwill, kommunal alignment. Synergimodell: Purpose amplifies profit. Profit strengthens purpose.|STRATEGIC FORCE MULTIPLIER. Registered non-profit, already operational. Free gym, public health, retreat scholarships, youth support, Final Wish cases. Enables EU grants, NGO media goodwill. Purpose amplifies profit. Profit strengthens purpose.|MULTIPLICADOR DE FUERZA. Non-profit registrada, ya operativa.|СТРАТЕГИЧЕСКИЙ МУЛЬТИПЛИКАТОР. Зарегистрированный НКО, уже действует.',
+st:'Hybrid model: ingen konkurrent har denna arkitektur. Gör CDP svårare att kopiera, mer finansierbart, mer skalbart, mer politiskt alignerat, mer globalt attraktivt.|No competitor has this architecture. Makes CDP harder to copy, more fundable, more scalable, more politically aligned.',
+iv:true},
+
+{id:'team',i:'T',l:'Team|Team|Equipo|Команда',c:'support',s:'active',
+d:'Jesper "Captain J" Melin  - Grundare, visionär, community builder, coach, systemtänkare. Michelle Melin  - Medgrundare, operations, Cabana, community care. Kirill  - Militärtränare, discipline backbone. Sanna  - Content strategy, filmskola, dokumentation. Angela  - Yoga, wellness, coaching. 4–6 flerspråkiga tränare (8+ språk). Tech: Nautics Technologies OU (Estland).|Jesper "Captain J" Melin  - Founder, visionary, coach. Michelle Melin  - Co-founder, operations, Cabana. Kirill  - Military trainer. Sanna  - Content strategy. Angela  - Yoga, wellness. Tech: Nautics Technologies OU.|Jesper, Michelle, Kirill, Sanna, Angela. Tech: Nautics Technologies OU.|Jesper, Michelle, Kirill, Sanna, Angela. Тех: Nautics Technologies OU.',
+iv:true},
+
+{id:'kpis',i:'KPI',l:'KPI:er|KPIs|KPIs|KPI',c:'support',s:'active',
+d:'KPI:er (Key Performance Indicators) visar var CDP växer idag och berättar en historia: organisk tillväxt utan en enda krona i betald marknadsföring. 59 länder, 12.9K+ Instagram-följare, 14+ träningspass per vecka, 8+ utbildade tränare, €19/mån genomsnittlig plattformintäkt per medlem. Dessa siffror är inte bara statistik  - de är bevis på att Coaches Don\u0027t Play fungerar.|KPIs show ecosystem health and tell a story: organic growth with zero marketing spend. 59 countries, 12.9K+ Instagram followers, 14+ training sessions/week, 8+ certified coaches, €19/month average platform revenue per member. These numbers prove the model works.|KPIs muestran la salud del ecosistema: crecimiento orgánico sin gasto en marketing. 59 países, 12.9K+ seguidores, 14+ entrenamientos/semana, 8+ entrenadores, €19/mes ingresos promedio.|KPI показывают здоровье экосистемы: органический рост без маркетинг-затрат. 59 стран, 12.9K+ последователей, 14+ тренировок/неделю, 8+ тренеров, €19/мес средний доход.',
+m:[{l:'countries',v:'59',s:'Organiskt'},{l:'ig2',v:'12.9K+',s:'Followers'},{l:'cw',v:'14+',s:'Pass/vecka'},{l:'lang',v:'8+',s:'Tränare'},{l:'rev',v:'€19',s:'/mån plattform'},{l:'zero',v:'€0',s:'Marketing'}],iv:true},
+
+{id:'roadmap',i:'▸▸',l:'Roadmap|Roadmap|Hoja de Ruta|Дорожная карта',c:'support',s:'active',
+d:'Fas 1 (Nu): Kärna stärks  - outdoor gym, Cabana Hub, coaching, community, content, retreats, plattforms-MVP. Fas 2 (6–12 mån): Beach Butler, merch expansion, fler partners, plattform 2.0. Fas 3 (12–24 mån): Fler hubbar (Alicante, Málaga), private label pilot, CDP Coin design. Fas 4 (24+ mån): Internationell expansion, centralkök, franchise-logik, AI department, full CDP Coin.|Phase 1 (Now): Strengthen core. Phase 2 (6–12mo): Beach Butler, merch, platform 2.0. Phase 3 (12–24mo): More hubs, private label. Phase 4 (24+mo): International expansion, CDP Coin, AI.|Fase 1: Fortalecer. Fase 2: Escalar. Fase 3: Multiplicar. Fase 4: Plataforma global.|Фаза 1: Укрепить. Фаза 2: Масштабировать. Фаза 3: Умножить. Фаза 4: Глобальная платформа.',
+iv:true},{id:'foundation',i:'CDP',l:'CDP Foundation|CDP Foundation|Fundación CDP|Фонд CDP',c:'support',s:'active',
+d:'Registrerad non-profit  - separate från men integrerad med kommersiella operationer. Driver gratis outdoor gym, community health, retreat-stipendier, The Final Wish program, ungdomsstöd, mental hälsa events. Möjliggör EU-bidrag, NGO-mediegoodwill, kommun-alignment, mediabevakning. "Inte en inkomstström  - men en värdemultiplikator." Ökar: trust, partnership-möjligheter, grant opportunities, legitimacy.|Registered non-profit  - separate yet integrated. Manages free gym, public health, retreat scholarships, The Final Wish program, youth support, mental health. Enables EU grants, NGO media goodwill, municipal alignment. "Not a revenue stream  - but a value engine."|Fundación registrada. Gestiona gimnasio gratuito, salud pública, becas de retiros, programa Final Wish. Genera confianza, alineación municipal, oportunidades de subvenciones.|Зарегистрированный НКО. Управляет бесплатным залом, общественным здоровьем, стипендиями, программой Final Wish. Увеличивает доверие, муниципальное выравнивание, возможности грантов.',
+st:'Foundation förstärker tillitsnätet. Purpose-driven revenue generation utan att ta från profit margin.',
+m:[{l:'impact',v:'Unlimited',s:'Through grants'},{l:'team',v:'Volunteers',s:'+ staff'}],iv:true},
+
+{id:'podcast_studio',i:'EVT',l:'Event Hosting|Event Hosting|Eventos & Hosting|Ивент-хостинг',c:'growth',s:'active',
+d:'CDP:s eventplattform för att bygga community och skapa intäkter. Wine tasting-kvällar, collaboration evenings med lokala entreprenörer, Swedish dinner med skandinavisk mat, julbord (Christmas table), nyårsfest (New Year\'s party), lördagskvällar med DJ och live-musik. Varje event stärker community-banden, genererar content och driver intäkter till CDP.club. Musiksystemet skapar Torreviejas bästa atmosfär  - en destination, inte bara en restaurang.|CDP\'s event platform for community building and revenue. Wine tastings, collaboration evenings with local entrepreneurs, Swedish dinners, Christmas table, New Year\'s party, Saturday night events with DJ and live music. Every event strengthens bonds, creates content and drives revenue. The music system creates Torrevieja\'s best atmosphere.|Plataforma de eventos CDP: catas de vino, cenas suecas, fiestas, música en vivo. Cada evento fortalece la comunidad y genera ingresos.|Ивент-платформа CDP: дегустации, шведские ужины, вечеринки, живая музыка.',
+st:'Events = community growth engine + revenue driver. Varje event skapar content, stärker lojalitet och driver nya besökare till CDP.club.|Events = community growth engine + revenue driver.',
+o:['Wine tasting evenings|Wine tasting evenings','Collaboration evenings|Collaboration evenings','Swedish dinner nights|Swedish dinner nights','Julbord & nyårsfest|Christmas & New Year parties','Saturday night events|Saturday night events','Live music & DJ nights|Live music & DJ nights'],iv:true},
+
+{id:'coworking',i:'CW',l:'Co-working Space|Co-working Space|Espacio Coworking|Коворкинг',c:'growth',s:'active',
+d:'Co-working space integrerat i CDP Hub. Gratis med köp (mat/drycker). Genererar: repeat customers som sitter i timmar, lojalitet till café, community-bygge → membership retention, daglig visibilitet för nyanländare. "No cost co-working model bygger ett sticky ekosystem."|Co-working integrated into CDP Hub. Free with purchase. Generates: repeat customers staying hours, café loyalty, community building → retention. "No cost co-working builds sticky ecosystem."|Espacio coworking integrado. Gratuito con compra. Genera: clientes recurrentes, lealtad de café, construcción de comunidad. "El modelo de coworking sin costo construye un ecosistema pegadizo."|Коворкинг интегрирован в CDP Hub. Бесплатно с покупкой. Генерирует: повторных клиентов, лояльность кафе, построение сообщества → удержание.',iv:true},
+
+{id:'courses',i:'EDU',l:'Courses|Courses|Cursos|Курсы',c:'growth',s:'planned',
+d:'Way of the Viking, Way of the Father, She Said (hormones, psychology, female biology), 90-Day Challenge upgraded versions, Deep dive masterclasses (discipline, mindset, trauma, resilience). Högt marginella och högt impactfulla, perfekt för scaling. Digitala produkter distribuerade via platform.|Way of the Viking, Way of the Father, She Said (hormones, psychology, female biology), 90-Day upgraded, Deep dive masterclasses. High-margin, high-impact, perfect for scaling. Digital distribution via platform.|Way of the Viking, Way of the Father, She Said, Desafíos mejorados, Masterclasses. Alto margen, alto impacto. Distribución digital.|Way of the Viking, Way of the Father, She Said, Masterclasses. Высокая маржа, высокое воздействие. Цифровое распределение.',
+st:'Digitala kurser = obegränsad skalning utan operationell kostnad per deltagare.',
+o:['Way of the Viking masterclass|Way of the Viking','Way of the Father program|Way of the Father','She Said (female biology)|She Said','90-Day Challenge Pro|90-Day Challenge Pro','Deep dive masterclasses|Deep dives'],iv:true},
+
+{id:'cruising',i:'⛵',l:'Cruising|Cruising|Cruceros|Круизы',c:'expansion',s:'future',
+d:'CDP Cruising concept  - wellness retreats på havet. 55MB proposal dokument existerar. Kombinerar: fitness, coaching, community-byggande, lyxig upplevelse. Ny distributionskanal för CDP-ekosystem. Resande → ambassadörer → digital members → lokal expansion.|CDP Cruising  - wellness retreats at sea. 55MB proposal exists. Combines: fitness, coaching, community, luxury experience. New distribution channel for CDP ecosystem.|CDP Cruceros: retiros de bienestar en el mar. Propuesta de 55MB existe. Combina: fitness, coaching, comunidad, experiencia de lujo. Nuevo canal de distribución.|Круизы CDP: оздоровительные ретриты в море. Предложение на 55МБ существует. Сочетает: фитнес, коучинг, общение, люксовый опыт. Новый канал распределения.',iv:true},
+
+{id:'brain_os',i:'OS',l:'BRAIN-OS|BRAIN-OS|BRAIN-OS|BRAIN-OS',c:'support',s:'in_progress',
+d:'Personal operations layer. AI-system för intake, routing, Past Actions och intern koordination. TypeScript, Express, React, PostgreSQL, Kysely. Aktiv utveckling  - stark teknisk grund, pilot flows ofullständiga. BrainCore hanterar: intake, raw artifacts, alias & mappings, routing decisions, review/uncertainty queue.|Personal operations layer. AI system for intake, routing, Past Actions, coordination. TypeScript, Express, React, PostgreSQL, Kysely. Active development  - strong foundation, pilot flows incomplete. BrainCore manages intake, artifacts, routing, queues.|Capa de operaciones personales. Sistema IA para intake, enrutamiento, acciones pasadas, coordinación. TypeScript, Express, React, PostgreSQL, Kysely. Desarrollo activo. BrainCore gestiona intake, artefactos, enrutamiento, colas.|Слой личных операций. Система ИИ для приёма, маршрутизации, прошлых действий, координации. TypeScript, Express, React, PostgreSQL, Kysely. Активная разработка. BrainCore управляет приёмом, артефактами, маршрутизацией, очередями.',iv:true},
+
+{id:'comm_hub',i:'COM',l:'Communication Hub|Communication Hub|Centro de Comunicación|Центр коммуникаций',c:'support',s:'active',
+d:'AI-driven mail management & draft handling. TypeScript, Fastify, Next.js, Prisma, PostgreSQL. REDAN DEPLOYAD och i produktion. Hanterar mail threads, drafts, mail classification, approval flows. Integrated med BRAIN-OS för workflow automation.|AI-driven mail management and draft handling. TypeScript, Fastify, Next.js, Prisma, PostgreSQL. ALREADY DEPLOYED in production. Manages mail threads, drafts, classification, approval flows.|Centro de comunicaciones impulsado por IA. TypeScript, Fastify, Next.js, Prisma, PostgreSQL. YA IMPLEMENTADO en producción. Gestiona hilos de correo, borradores, clasificación, flujos de aprobación.|Центр коммуникаций на основе ИИ. TypeScript, Fastify, Next.js, Prisma, PostgreSQL. УЖЕ РАЗВЁРНУТ в производстве. Управляет потоками писем, черновиками, классификацией, потоками одобрения.',iv:true},
+
+{id:'sound_system',i:'♪',l:'CDPSoundSystem|CDPSoundSystem|CDPSoundSystem|CDPSoundSystem',c:'expansion',s:'planned',
+d:'Lokal audio & musik-plattform. Swift, SwiftUI, SQLite, AVFoundation, Bonjour. Lokal app för intern användning. Hanterar bibliotek, playback, zoner, lokal synkronisering. Skapar CDP-atmosfären vid hubbar. Trainers & interns kan styra musik/ljud över nätverk.|Local audio & music platform. Swift, SwiftUI, SQLite, AVFoundation, Bonjour. Local app for intern use. Manages library, playback, zones, local sync. Creates CDP atmosphere at hubs.|Plataforma de audio y música local. Swift, SwiftUI, SQLite, AVFoundation, Bonjour. App local. Gestiona biblioteca, reproducción, zonas, sincronización local. Crea atmósfera CDP.|Локальная платформа аудио и музыки. Swift, SwiftUI, SQLite, AVFoundation, Bonjour. Локальное приложение. Управляет библиотекой, воспроизведением, зонами, локальной синхронизацией. Создаёт атмосферу CDP.',iv:true},
+
+];
+
+// Helper to get localized text from pipe-separated strings
+function gl(s){if(!s)return'';const a=s.split('|');const i={sv:0,en:1,es:2,ru:3}[LN]||0;return a[i]||a[1]||a[0]}
+
+// ===== 59 EDGES =====
+const E=[
+{f:'community',t:'outdoor_gym',y:'rs',s:'strong'},{f:'community',t:'coaching',y:'rs',s:'strong'},
+{f:'community',t:'retreats',y:'rs',s:'strong'},{f:'community',t:'content',y:'rg',s:'strong'},
+{f:'community',t:'partnerships',y:'rst',s:'medium'},{f:'community',t:'merch',y:'rg',s:'medium'},
+{f:'community',t:'podcast_studio',y:'rs',s:'strong'},{f:'community',t:'beach_butler',y:'rg',s:'medium'},
+{f:'community',t:'cabana',y:'rs',s:'strong'},
+{f:'outdoor_gym',t:'community',y:'rg',s:'strong'},{f:'outdoor_gym',t:'content',y:'rg',s:'strong'},
+{f:'outdoor_gym',t:'coaching',y:'rg',s:'medium'},{f:'outdoor_gym',t:'retreats',y:'rg',s:'medium'},
+{f:'outdoor_gym',t:'merch',y:'rg',s:'medium'},{f:'outdoor_gym',t:'partnerships',y:'rst',s:'medium'},
+{f:'outdoor_gym',t:'classes',y:'rc',s:'strong'},{f:'outdoor_gym',t:'cabana',y:'rg',s:'strong'},
+{f:'cabana',t:'community',y:'rst',s:'strong'},{f:'cabana',t:'food_bev',y:'rc',s:'strong'},
+{f:'cabana',t:'beach_butler',y:'rs',s:'potential'},{f:'cabana',t:'merch',y:'rd',s:'medium'},
+{f:'cabana',t:'content',y:'rg',s:'strong'},
+{f:'coaching',t:'kpis',y:'rm',s:'strong'},{f:'coaching',t:'content',y:'rg',s:'medium'},
+{f:'coaching',t:'community',y:'rst',s:'strong'},{f:'coaching',t:'digital',y:'rd',s:'medium'},
+{f:'retreats',t:'kpis',y:'rm',s:'strong'},{f:'retreats',t:'content',y:'rg',s:'strong'},
+{f:'retreats',t:'community',y:'rst',s:'medium'},{f:'retreats',t:'partnerships',y:'rst',s:'medium'},
+{f:'retreats',t:'private_label',y:'rd',s:'potential'},
+{f:'beach_butler',t:'merch',y:'rd',s:'medium'},{f:'beach_butler',t:'private_label',y:'rd',s:'potential'},
+{f:'beach_butler',t:'food_bev',y:'rd',s:'potential'},{f:'beach_butler',t:'kpis',y:'rm',s:'potential'},
+{f:'digital',t:'community',y:'rs',s:'strong'},{f:'digital',t:'classes',y:'rs',s:'strong'},
+{f:'digital',t:'kpis',y:'rs',s:'strong'},{f:'digital',t:'coaching',y:'rs',s:'medium'},
+{f:'digital',t:'merch',y:'rd',s:'potential'},{f:'digital',t:'cdp_coin',y:'rs',s:'future'},
+{f:'content',t:'community',y:'rst',s:'strong'},{f:'content',t:'partnerships',y:'rst',s:'medium'},
+{f:'content',t:'sponsors',y:'rs',s:'medium'},
+{f:'future_hubs',t:'merch',y:'rd',s:'future'},{f:'future_hubs',t:'private_label',y:'rd',s:'future'},
+{f:'future_hubs',t:'central_kitchen',y:'rs',s:'future'},{f:'future_hubs',t:'community',y:'rg',s:'future'},
+{f:'future_hubs',t:'food_bev',y:'rc',s:'future'},
+{f:'private_label',t:'beach_butler',y:'rd',s:'potential'},{f:'private_label',t:'cabana',y:'rd',s:'potential'},
+{f:'partnerships',t:'community',y:'rst',s:'medium'},{f:'partnerships',t:'kpis',y:'rm',s:'medium'},
+{f:'partnerships',t:'sponsors',y:'rf',s:'medium'},
+{f:'thesis',t:'overview',y:'rde',s:'strong'},
+{f:'impact',t:'community',y:'rst',s:'strong'},{f:'impact',t:'partnerships',y:'rst',s:'medium'},
+{f:'central_kitchen',t:'food_bev',y:'rs',s:'future'},{f:'central_kitchen',t:'beach_butler',y:'rs',s:'future'},
+{f:'central_kitchen',t:'retreats',y:'rs',s:'future'},
+{f:'podcast_studio',t:'content',y:'rg',s:'strong'},{f:'podcast_studio',t:'partnerships',y:'rst',s:'medium'},
+{f:'cdp_coin',t:'community',y:'rst',s:'future'},{f:'ai_dept',t:'digital',y:'rs',s:'future'},
+{f:'ai_dept',t:'content',y:'rs',s:'future'},
+{f:'foundation',t:'community',y:'rst',s:'strong'},
+{f:'foundation',t:'outdoor_gym',y:'rs',s:'strong'},
+{f:'foundation',t:'impact',y:'rc',s:'strong'},
+{f:'foundation',t:'partnerships',y:'rst',s:'medium'},
+{f:'podcast_studio',t:'content',y:'rg',s:'strong'},
+{f:'podcast_studio',t:'cabana',y:'rs',s:'strong'},
+{f:'podcast_studio',t:'partnerships',y:'rg',s:'medium'},
+{f:'coworking',t:'cabana',y:'rs',s:'strong'},
+{f:'coworking',t:'community',y:'rst',s:'medium'},
+{f:'coworking',t:'digital',y:'rg',s:'medium'},
+{f:'courses',t:'digital',y:'rd',s:'medium'},
+{f:'courses',t:'content',y:'rg',s:'medium'},
+{f:'courses',t:'coaching',y:'rs',s:'strong'},
+{f:'cruising',t:'retreats',y:'rs',s:'future'},
+{f:'cruising',t:'community',y:'rst',s:'future'},
+{f:'brain_os',t:'digital',y:'rs',s:'medium'},
+{f:'brain_os',t:'comm_hub',y:'rs',s:'medium'},
+{f:'comm_hub',t:'community',y:'rs',s:'medium'},
+{f:'sound_system',t:'cabana',y:'rs',s:'potential'},
+{f:'sound_system',t:'future_hubs',y:'rs',s:'future'},
+{f:'podcast_studio',t:'coworking',y:'rs',s:'medium'},
+{f:'cdp_club',t:'community',y:'rs',s:'strong'},
+{f:'cdp_club',t:'outdoor_gym',y:'rs',s:'strong'},
+{f:'cdp_club',t:'content',y:'rg',s:'strong'},
+{f:'cdp_club',t:'coworking',y:'rc',s:'strong'},
+{f:'cdp_club',t:'food_bev',y:'rc',s:'strong'},
+{f:'cdp_club',t:'partnerships',y:'rst',s:'medium'},
+{f:'cdp_club',t:'podcast_studio',y:'rs',s:'medium'},
+{f:'cdp_club',t:'beach_butler',y:'rs',s:'strong'},
+{f:'cdp_club',t:'cdp_gym',y:'rs',s:'strong'},
+{f:'cabana',t:'cdp_club',y:'rp',s:'strong'},
+{f:'cdp_gym',t:'community',y:'rs',s:'strong'},
+{f:'cdp_gym',t:'outdoor_gym',y:'rs',s:'strong'},
+{f:'cdp_gym',t:'cdp_club',y:'rs',s:'strong'},
+{f:'cdp_gym',t:'coaching',y:'rs',s:'strong'},
+{f:'cdp_gym',t:'classes',y:'rc',s:'strong'},
+{f:'beach_butler',t:'cdp_club',y:'rs',s:'strong'},
+{f:'beach_butler',t:'food_bev',y:'rd',s:'strong'},
+{f:'beach_butler',t:'partnerships',y:'rst',s:'medium'},
+{f:'beach_butler',t:'content',y:'rg',s:'medium'},
+{f:'beach_butler',t:'community',y:'rst',s:'medium'},
+];
+
+const IL=[
+{t:'Community = noll CAC|Community = zero CAC|Comunidad = CAC cero|Сообщество = нулевой CAC',d:'59 länder. 12.9K followers. Noll ads. Word-of-mouth. Retention driven av tillhörighet.|59 countries. 12.9K followers. Zero ads. Retention by belonging.|59 países. Sin publicidad.|59 стран. Без рекламы.'},
+{t:'Gratis-modellen = tillväxtmotor|Free model = growth engine|Modelo gratuito = motor|Бесплатная модель = двигатель',d:'Varje deltagare → ambassadör + content piece + betalande kund. 4.5M impressions per 90-Day Challenge.|Every participant → ambassador + content + paying customer. 4.5M impressions per 90-Day Challenge.|Cada participante → embajador + contenido. 4.5M impresiones.|Каждый участник → амбассадор + контент. 4.5M показов.'},
+{t:'CDP.club + Gym: Två entiteter, ett ekosystem|CDP.club + Gym: Two entities, one ecosystem|CDP.club + Gym: Dos entidades|CDP.club + Gym: Две сущности',d:'Polka-lokalen delas i två separata bolag: CDP.club (restaurang/hub/café) och CDP Gym (indoor gym). Juridiskt och operativt separata men integrerade i CDP-ekosystemet. Alla licenser ingår i köpet. €90K investering med 4 års payback.|The Polka location splits into two separate companies: CDP.club (restaurant/hub/café) and CDP Gym (indoor gym). Legally separate but ecosystem-integrated. All licenses included. €90K with 4-year payback.|Local Polka dividido en dos: CDP.club (restaurante) y CDP Gym. Separados pero integrados.|Локация Polka разделена на два: CDP.club (ресторан) и CDP Gym. Юридически раздельные, но интегрированные.'},
+{t:'9 Behavior Engines|9 Behavior Engines|9 Motores|9 Двигателей',d:'Varje motor fungerar som tratt OCH svänghjul. Hela systemet accelererar med varje ny medlem, coach, hub, retreat, partner. Jet Engine-arkitektur.|Every engine works as funnel AND flywheel. The entire system accelerates. Jet Engine architecture.|Cada motor es embudo Y volante. Arquitectura de motor a reacción.|Каждый двигатель  - воронка И маховик. Архитектура реактивного двигателя.'},
+{t:'Turister = global expansion|Tourists = global expansion|Turistas = expansión|Туристы = глобальная экспансия',d:'En hub = en global konverteringsnod. Turister tar CDP hem digitalt. Internationell expansion utan marknadsföringskostnad.|One hub = one global conversion node. Tourists take CDP home digitally. International expansion at zero marketing cost.|Un hub = un nodo de conversión global.|Один хаб = один глобальный конверсионный узел.'},
+{t:'Non-profit = kraftmultiplikator|Non-profit = force multiplier|Non-profit = multiplicador|НКО = мультипликатор',d:'Hybrid model: purpose förstärker profit. Profit förstärker purpose. Ingen konkurrent har denna arkitektur.|Hybrid model: purpose amplifies profit. Profit strengthens purpose. No competitor has this architecture.|Modelo híbrido: el propósito amplifica el beneficio.|Гибридная модель: цель усиливает прибыль.'},{t:'Three Economic Layers|Three Economic Layers|Tres Capas Económicas|Три экономических слоя',d:'Physical Layer (gyms, hubs, food, merch, beach butler). Digital Layer (platform €19-199/mo, courses, AI automation). Social Impact Layer (Foundation grants, purpose amplification, public health partnerships, media goodwill). Alle tre layerer drives varandra  - profit from physical/digital enables purpose via foundation.|Physical Layer (gyms, hubs, food, merch). Digital Layer (platform, courses, AI). Social Impact Layer (Foundation, grants, public health). All three strengthen each other  - profit enables purpose.|Capa física (gimnasios, hubs, comida, merch). Capa digital (plataforma, cursos, IA). Capa de impacto (Fundación, subvenciones). Los tres se fortalecen mutuamente.|Физический слой (залы, хабы, еда, мерч). Цифровой слой (платформа, курсы, ИИ). Слой социального воздействия (Фонд, гранты). Все три усиливают друг друга.'},{t:'Beach Butler = Tech-plattform|Beach Butler = Tech Platform|Beach Butler = Plataforma Tech|Beach Butler = Тех-платформа',d:'Separat bolag, ren tech. Runners anställs av merchanten, inte plattformen. Undviker Ley Rider. Owned-first: CDP.club = första merchant. Franchise-expansion: stad för stad. TAM: €1.6-2.4B strand-mat Europa. 9 AI-agenter bygger: CTO, Design, Produkt, CFO, COO, Legal, Marketing, Ideas, CEO.|Separate company, pure tech. Runners employed by merchant, not platform. Avoids Ley Rider. Owned-first model. Franchise: city by city. TAM: €1.6-2.4B European beach food. 9 AI agents building it.|Empresa separada, tech pura. Runners empleados por el comerciante. Modelo owned-first. Franquicia: ciudad por ciudad.|Отдельная компания, чистый тех. Раннеры нанимаются мерчантом. Модель owned-first. Франшиза: город за городом.'},
+
+];
+
+// ===== INIT =====
+function init(){bn();riv();rap();document.getElementById('si').placeholder=t('search');const aiInput=document.getElementById('ai-input');if(aiInput){const placeholders={sv:'Fråga CDP:s AI...',en:'Ask CDP AI...',es:'Pregúntale a la IA de CDP...',ru:'Спросите AI CDP...'};aiInput.placeholder=placeholders[LN]||placeholders.en}}
+function tt(){TH=TH==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',TH);if(net)net.destroy();bn()}
+function sw(v){CV=v;document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===v));document.getElementById('iv').classList.toggle('v',v==='investor');document.getElementById('ap').classList.toggle('v',v==='admin');if(v==='admin')cp();if(v==='map')cp()}
+function sl(l){LN=l;document.querySelectorAll('.lng').forEach(b=>b.classList.toggle('on',b.textContent.trim()===l.toUpperCase()));document.getElementById('si').placeholder=t('search');const aiInput=document.getElementById('ai-input');if(aiInput){const placeholders={sv:'Fråga CDP:s AI...',en:'Ask CDP AI...',es:'Pregúntale a la IA de CDP...',ru:'Спросите AI CDP...'};aiInput.placeholder=placeholders[LN]||placeholders.en}if(nDS)N.forEach(n=>{nDS.update({id:n.id,label:n.i+'\n'+gl(n.l),title:btt(n)})});riv();rap();if(SN)sn(SN.id)}
+
+function bn(){
+const c=document.getElementById('net'),dk=TH==='dark';
+const bgMap=dk?SB:SBL;
+const vn=N.map(n=>{const sz=n.c==='core'?38:n.c==='growth'?30:n.c==='expansion'?26:22;
+const nbg=dk?bgMap[n.s]:(n.s==='active'?'rgba(240,253,244,.95)':n.s==='in_progress'?'rgba(255,251,235,.95)':n.s==='planned'?'rgba(239,246,255,.95)':n.s==='future'?'rgba(245,243,255,.95)':'rgba(249,250,251,.95)');
+let px=0,py=0;
+const idx=N.filter(nd=>nd.c===n.c).indexOf(n);
+const spread=180;
+if(n.c==='core'){px=-200+idx*spread*0.6;py=-100+(idx%3)*spread*0.4;}
+else if(n.c==='growth'){px=200+idx*spread*0.5;py=-150+(idx%4)*spread*0.4;}
+else if(n.c==='expansion'){px=-100+(idx%3)*spread*0.7;py=250+Math.floor(idx/3)*spread*0.4;}
+else{px=300+(idx%3)*spread*0.5;py=200+Math.floor(idx/3)*spread*0.4;}
+return{id:n.id,label:n.i+'\n'+gl(n.l),shape:'box',size:sz,x:px,y:py,
+font:{color:dk?'#F4F4F0':'#1a1a1a',size:13,face:'Inter,system-ui,sans-serif',bold:{enabled:true,color:dk?'#fff':'#000'}},
+color:{background:nbg,border:CC[n.c],highlight:{background:dk?'rgba(52,211,153,.4)':'rgba(5,150,105,.2)',border:'#34D399'},hover:{background:dk?'rgba(52,211,153,.2)':'rgba(5,150,105,.1)',border:'#34D399'}},
+borderWidth:2,borderWidthSelected:3,shadow:{enabled:true,color:dk?'rgba(0,0,0,.35)':'rgba(0,0,0,.08)',size:8,x:0,y:4},margin:{top:10,bottom:10,left:14,right:14},widthConstraint:{minimum:100,maximum:160},title:btt(n)}});
+const clusterLabels=[
+  {id:'_cl_core',label:t('cc').toUpperCase(),x:-100,y:-250,font:{size:20,bold:{enabled:true},color:dk?'#34D399':'#059669',face:'Inter'},shape:'text',physics:false},
+  {id:'_cl_growth',label:t('cg').toUpperCase(),x:350,y:-280,font:{size:20,bold:{enabled:true},color:dk?'#F59E0B':'#D97706',face:'Inter'},shape:'text',physics:false},
+  {id:'_cl_expansion',label:t('ce').toUpperCase(),x:-50,y:380,font:{size:20,bold:{enabled:true},color:dk?'#8B5CF6':'#7C3AED',face:'Inter'},shape:'text',physics:false},
+  {id:'_cl_support',label:t('cs').toUpperCase(),x:400,y:320,font:{size:20,bold:{enabled:true},color:dk?'#3B82F6':'#2563EB',face:'Inter'},shape:'text',physics:false}
+];
+vn.push(...clusterLabels);
+const ve=E.map((e,i)=>{const w=e.s==='strong'?1.5:e.s==='medium'?0.8:0.4;const d=e.s==='potential'||e.s==='future';
+const ec=dk?(e.s==='strong'?'rgba(52,211,153,.2)':e.s==='medium'?'rgba(160,160,176,.1)':'rgba(100,100,120,.06)'):(e.s==='strong'?'rgba(5,150,105,.18)':e.s==='medium'?'rgba(100,100,120,.08)':'rgba(100,100,120,.04)');
+return{id:'e'+i,from:e.f,to:e.t,width:w,dashes:d,color:{color:ec,highlight:'#34D399',hover:'rgba(52,211,153,.35)'},arrows:{to:{enabled:true,scaleFactor:.3,type:'arrow'}},smooth:{type:'curvedCW',roundness:.15},hoverWidth:.3}});
+nDS=new vis.DataSet(vn);eDS=new vis.DataSet(ve);
+net=new vis.Network(c,{nodes:nDS,edges:eDS},{physics:{enabled:true,solver:'forceAtlas2Based',forceAtlas2Based:{gravitationalConstant:-80,centralGravity:.008,springLength:280,springConstant:.02,damping:.5,avoidOverlap:.8},stabilization:{iterations:300},maxVelocity:15},interaction:{hover:true,tooltipDelay:180,zoomSpeed:.8},edges:{selectionWidth:1.5}});
+net.on('click',p=>{if(p.nodes.length)sn(p.nodes[0]);else cp()});
+net.on('doubleClick',p=>{if(p.nodes.length)net.focus(p.nodes[0],{scale:1.5,animation:{duration:500,easingFunction:'easeInOutQuad'}})});
+}
+function btt(n){const d=gl(n.d);return`<div style="max-width:260px"><b>${n.i} ${gl(n.l)}</b><br><span style="opacity:.6;font-size:10px">${sl2(n.s)} · ${cl(n.c)}</span><br><br>${d.substring(0,160)}${d.length>160?'...':''}</div>`}
+
+function sec(title,body,defaultState){const isOpen=defaultState==='open';return`<div class="ss"><div class="ss-t ss-toggle${isOpen?' open':''}" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">${title}</div><div class="ss-body${isOpen?' open':''}">${body}</div></div>`}
+
+function fmtDesc(raw){
+const sents=raw.split(/\.\s+/).filter(s=>s.trim());if(!sents.length)return raw;
+const lead=sents[0]+(sents[0].endsWith('.')?'':'.');
+const rest=sents.slice(1);
+let html=`<div class="desc-lead">${hlFacts(lead)}</div>`;
+if(rest.length){
+const paras=[];let cur=[];
+rest.forEach(s=>{cur.push(s+(s.endsWith('.')?'':'.'));if(cur.length>=2){paras.push(cur.join(' '));cur=[];}});
+if(cur.length)paras.push(cur.join(' '));
+html+=`<div class="desc-body">${paras.map(p=>'<p>'+hlFacts(p)+'</p>').join('')}</div>`;
+}
+const kvs=[];
+const priceM=raw.match(/(?:Pris|Price|Precio|Цена)[:\s]*([€$£][\d\s.,KkMm]+)/i);
+if(priceM)kvs.push({l:'Pris',v:priceM[1].trim()});
+const launchM=raw.match(/(?:Launch|Lansering|Lanzamiento)[:\s]*([^.]+)/i);
+if(launchM)kvs.push({l:'Launch',v:launchM[1].trim().substring(0,30)});
+const tamM=raw.match(/TAM[:\s]*([€$£][\d\s.,\-KkMmBb]+)/i);
+if(tamM)kvs.push({l:'TAM',v:tamM[1].trim()});
+const beM=raw.match(/(?:break-even|breakeven)[:\s]*([^.]+)/i);
+if(beM)kvs.push({l:'Break-even',v:beM[1].trim().substring(0,25)});
+if(kvs.length){html+=`<div class="desc-kv">${kvs.map(k=>`<div class="desc-kv-item"><div class="kv-label">${k.l}</div><div class="kv-val">${k.v}</div></div>`).join('')}</div>`;}
+return html;}
+function hlFacts(s){return s.replace(/(€[\d\s.,KkMmBb\-]+)/g,'<span class="desc-fact">$1</span>').replace(/(\d+\s*(?:länder|countries|países|стран|%|månader|months|meses|месяцев))/gi,'<span class="desc-fact">$1</span>');}
+function oppClick(txt){const tl=txt.toLowerCase();const match=N.find(n=>{const nl=gl(n.l).toLowerCase();return tl.includes(nl)||nl.includes(tl)||n.id.includes(tl.replace(/[^a-z]/g,'').substring(0,8));});if(match){fn(match.id);}else{const el=event.currentTarget;const tip=el.querySelector('.opp-tip');if(tip)tip.style.display=tip.style.display==='block'?'none':'block';}}
+// Translate Swedish business plan text to current language
+function bpTr(h){
+  if(LN==='sv'||!h)return h;
+  const d={
+    en:{
+      'Setup Cost':'Setup Cost','Hyra':'Rent','Till launch':'To launch','veckor':'weeks','dag':'day','Breakeven':'Breakeven',
+      'Polka-lokalen blir CDP:s första fysiska enhet  - en lean bar/cafeteria som expanderar först efter validering. CDP:s community ger en inbyggd kundbas från dag ett. Noll cold-start.':'The Polka location becomes CDP\'s first physical unit  - a lean bar/cafeteria that expands only after validation. CDP\'s community (gym members, coaching clients, retreat alumni) provides a built-in customer base from day one. Zero cold-start.','Strategiskt värde: permanent plats för events, community, content-produktion, merch, partnerskap  - och bevisar att CDP Club-konceptet är lönsamt och replikerbart.':'Strategic value: permanent venue for events, community, content production, merch, partnerships  - and proves to investors that CDP can operate physical units.','Bar & Cafeteria':'Bar & Cafeteria','Lean Phase 1: drycker, kaffe, enkel tapas, hälsosamma snacks. Ingen fullskalig restaurang. Minimerar personal, licensering och matsvinn.':'Lean Phase 1: drinks, coffee, simple tapas, healthy snacks. No full-scale restaurant. Minimizes staff, licensing, and waste.','Utomhusmiljö':'Outdoor Environment','Costa del Sol = uteservering är huvudattraktionen. 8–10 månader per år. Komfort, estetik och community-känsla.':'Costa del Sol = outdoor dining is the main attraction. 8-10 months per year. Comfort, aesthetics, and community feel.','Community Hub':'Community Hub','Inte ett vanligt café. Community-ankare. 200+ aktiva medlemmar + content engine som driver fottrafik utan betald annonsering.':'Not a typical café. Community anchor. 200+ active members + content engine that drives foot traffic without paid advertising.','Proof of Concept':'Proof of Concept','Validering: Fungerar CDP:s community-modell som fysisk hospitality? Lyckas = repeterbar CDP Club-playbook.':'Validation: Does CDP\'s community model work as physical hospitality? Success = repeatable CDP Club playbook.','Reset & Städning':'Reset & Cleaning','Djuprengöring, ta bort tidigare hyresgästs inventarier, dokumentera skick, identifiera reparationer.':'Deep cleaning, remove previous tenant\'s inventory, document condition, identify repairs.','Miljö & Setup':'Environment & Setup','Uteservering, belysning, skyltar, möbler, CDP-estetik.':'Outdoor dining, lighting, signage, furniture, CDP aesthetics.','Rebranding':'Rebranding','Ta bort Polka-identitet. CDP Club-varumärke. Skyltar, menyer, Google Maps.':'Remove Polka identity. CDP Club branding. Signage, menus, Google Maps.','Administration':'Administration','Bolagsregistrering, bankkonto, POS/betalning, bokföring, leverantörer.':'Company registration, bank account, POS/payment, accounting, suppliers.','★ Launch':'★ Launch','Soft opening med community. Feedback. Justering. Officiell öppning.':'Soft opening with community. Feedback. Adjustments. Official opening.','År 1 Milstolpar':'Year 1 Milestones','Maj 2026':'May 2026','Lean launch  - bar, kaffe, enkel tapas':'Lean launch  - bar, coffee, simple tapas','Jun–Aug':'Jun–Aug','Sommarvalidering, menyutveckling, köksexpansion om godkänt':'Summer validation, menu development, kitchen expansion if approved','Sep–Nov':'Sep–Nov','Lågsäsongstest, året-runt-livsduglighet':'Low-season testing, year-round viability','Dec–Apr':'Dec–Apr','Fullständig granskning. Fortsätt, expandera eller pivotera.':'Full review. Continue, expand, or pivot.','Torrevieja är Spaniens snabbast växande stad.':'Torrevieja is Spain\'s fastest-growing city.','Borgmästaren har uttalat ambitionen att göra Torrevieja till Spaniens främsta sportstad. CDP är perfekt positionerat i denna tillväxt  - differentiering kommer inte från menyn, utan från ekosystemet.':'The mayor has stated the ambition to make Torrevieja Spain\'s leading sports city. CDP is perfectly positioned in this growth  - differentiation comes not from the menu, but from the ecosystem.','Community-driven':'Community-driven','Aktiv, lojalitetsdriven gemenskap som besöker regelbundet och tar med nya via word-of-mouth.':'Active, loyalty-driven community that visits regularly and brings new people through word-of-mouth.','Content Engine':'Content Engine','Organisk digital synlighet  - venue som destination, inte bekvämlighetsställe.':'Organic digital visibility  - venue as destination, not convenience place.','Lifestyle-brand':'Lifestyle-brand','Hälsa, disciplin, livsstil  - växande hälsomedveten demografi.':'Health, discipline, lifestyle  - growing health-conscious demographic.','Nätverkseffekt':'Ecosystem Synergy','Events, varumärke och social media = flera anledningar till återbesök.':'Gym, coaching, retreats, events = multiple reasons for repeat visits.','Kundsegment':'Customer Segments','CDP Community':'CDP Community','Hälsomedvetna Expats':'Health-conscious Expats','Lokala invånare':'Local Residents','Walk-in / Turister':'Walk-in / Tourists','En konkurrent kan kopiera menyn men kan inte kopiera 200+ aktiva community-medlemmar, Instagram-följarskaran eller eventkalendern.':'A competitor can copy the menu but cannot copy 200+ active community members, Instagram following, or event calendar.','Michelle':'Michelle','Owner / Operator':'Owner / Operator','Daglig drift, kundupplevelse, leverantörer, on-site ledarskap':'Daily operations, customer experience, suppliers, on-site leadership','€1,500/mo':'€1,500/mo','Dhaval':'Dhaval','Ekonomi & Bokföring':'Finance & Accounting','Bokföring, skatt, compliance, finansrapportering':'Accounting, tax, compliance, financial reporting','€1,200–1,500/mo':'€1,200–1,500/mo','Sanna':'Sanna','Content & Brand':'Content & Brand','Social media, foto/video, varumärke, marknadsföring':'Social media, photo/video, branding, marketing','Jesper':'Jesper','Business Development':'Business Development','Strategisk riktning, partnerskap, investerarrelationer, ekosystem':'Strategic direction, partnerships, investor relations, ecosystem','€1,000–1,500/mo':'€1,000–1,500/mo','Varför är teamkostnaderna låga?':'Why are team costs low?','CDP är ett familjeägt koncept med en stark community-driven modell. Teamet drivs av passion, delägarskap och gemensam passion för projektet  - inte av marknadsmässiga löner. Varje teammedlem har multipla roller och bidrar brett till verksamheten. Det gör att vi kan hålla nere fasta kostnader utan att kompromissa på kvalitet. Siffrorna är uppskattningar. Struktur ej fastställd (anställd, autónomo eller tjänsteavtal). Spansk arbetsgivaravgift tillkommer ~30–35%.':'CDP is a family-owned concept with a strong community-driven model. The team is driven by passion, equity ownership, and multiple revenue streams within the ecosystem  - not market-rate salaries. Each team member has multiple roles and contributes to several business lines simultaneously. This allows us to keep fixed costs down without compromising quality. Numbers are estimates. Structure not finalized (employee, autonomous, or service agreement). Spanish employer taxes add ~30–35%.','Setup-kostnader':'Setup Costs','Djuprengöring':'Deep cleaning','Utemöbler & setup':'Outdoor furniture & setup','Inredning':'Interior','Skyltar & branding':'Signs & branding','POS-system':'POS system','Initialt lager':'Initial inventory','Admin & juridik':'Admin & legal','Reserv':'Reserve','TOTALT SETUP':'TOTAL SETUP','€5,600–8,800':'€5,600–8,800','Månatliga fasta kostnader':'Monthly Fixed Costs','Team (4 pers)':'Team (4 people)','€4,900–6,000':'€4,900–6,000','Utilities':'Utilities','€400–600':'€400–600','Försäkring':'Insurance','€150–250':'€150–250','Bokföring/gestor':'Accounting/manager','€200–350':'€200–350','Övrigt':'Other','€510–980':'€510–980','TOTALT/MÅNAD':'TOTAL/MONTH','€8,660–10,680':'€8,660–10,680','Intäktsscenarier':'Revenue Scenarios','Försiktig':'Conservative','30–40 kunder/dag × €8–10':'30–40 customers/day × €8–10','€7,200–12,000/mo':'€7,200–12,000/mo','Marginal: −€1,460 till +€1,340':'Margin: −€1,460 to +€1,340','Basfall':'Base Case','50–65 kunder/dag × €10–12':'50–65 customers/day × €10–12','€15,000–23,400/mo':'€15,000–23,400/mo','Marginal: +€4,320 till +€12,720':'Margin: +€4,320 to +€12,720','Uppsida':'Upside','75–90 kunder/dag × €12–15':'75–90 customers/day × €12–15','€27,000–40,500/mo':'€27,000–40,500/mo','Marginal: +€16,320 till +€29,820':'Margin: +€16,320 to +€29,820','COGS: 25–35%. Breakeven: ~€12,400–15,300/mo ≈ 40–50 kunder/dag. IVA 10% på mat/dryck.':'COGS: 25–35%. Breakeven: ~€12,400–15,300/mo ≈ 40–50 customers/day. VAT 10% on food/drink.','Framtida tillväxtstrategier':'Future Growth Strategies','Event-intäkter':'Event Revenue','Wine tastings, Swedish dinners, julbord, nyår och lördagsfester driver extra intäkter utöver daglig drift.':'Wine tastings, Swedish dinners, Christmas buffets, New Year\'s and Saturday parties drive extra revenue beyond daily operations.','Beach Butler-integration':'Beach Butler Integration','CDP.club som första merchant i Beach Butler-nätverket öppnar ny leveranskanal till stränder.':'CDP.club as the first merchant in the Beach Butler network opens a new delivery channel to the beaches.','Merch & Private Label':'Merch & Private Label','Egna produkter (kaffe, smoothie-mix, kläder) säljs on-site med hög marginal.':'Own products (coffee, smoothie mix, clothing) sold on-site with high margin.','Digital membership':'Digital Membership','Globala medlemskap via plattformen (€19–199/mån) adderar recurring revenue.':'Global membership via the platform (€19–199/month) adds recurring revenue.','Totalt kapitalbehov':'Total Capital Need','€20,000–30,000':'€20,000–30,000','Setup & renovering':'Setup & Renovation','€5,600–8,800':'€5,600–8,800','Driftbudget (3 mån)':'Operating budget (3 months)','€10,000–15,000':'€10,000–15,000','Rörelsekapital & reserv':'Working capital & reserve','€4,000–6,000':'€4,000–6,000','Riskreducering':'Risk Reduction','Låg initial investering vs nybygge':'Low initial investment vs new construction','Befintlig lokal  - ingen byggrisk':'Existing space  - no construction risk','Inbyggd kundbas  - inget cold-start':'Built-in customer base  - no cold-start','Fasad expansion  - inkrementellt':'Phased expansion  - incremental','12 mån validering med review gates':'12 months validation with review gates','Validerar CDP Club-modellen':'Validates CDP Club model','Kassaflödes-breakeven inom 2–3 månader. Positiv marginal från månad 4. ROI inom 8–14 månader.':'Cash flow breakeven within 2–3 months. Positive margin from month 4. ROI within 8–14 months.','Licensförseningar':'License Delays','Anlita gestor direkt. Starta med bar-only. Köksexpansion väntar på godkännande.':'Hire accountant immediately. Start with bar-only. Kitchen expansion waits for approval.','Intäkter under breakeven':'Revenue Below Breakeven','Lean kostnad. 3 mån runway. Meny/tider-justering. Community-aktivering.':'Lean cost. 3-month runway. Menu/hours adjustments. Community activation.','Säsongsvariation':'Seasonality','Kostnadsreduktion lågsäsong. Diversifiera med events. Bygg lokal stamkundsbas.':'Cost reduction low season. Diversify with events. Build local customer base.','Nyckelpersonberoende':'Key Person Dependency','Korsutbilda. Dokumentera rutiner. Undvik single points of failure.':'Cross-train. Document procedures. Avoid single points of failure.','Hyresrisk':'Lease Risk','Säkra bra villkor. Begränsa initial investering.':'Secure good terms. Limit initial investment.','Medel / Hög':'Medium / High','Hög / Medel':'High / Medium','Låg / Hög':'Low / High','Bolagsstruktur (SL/autónomo)':'Company structure (SL/autonomous)','Gestor / Dhaval':'Accountant / Dhaval','Verksamhetslicens (licencia de actividad)':'Business license (activity license)','Gestor / Michelle':'Accountant / Michelle','Livsmedelshantering (registro sanitario)':'Food handling (health registry)','Michelle / personal':'Michelle / staff','Terrasslov':'Terrace permit','Gestor':'Accountant','Brand & säkerhet':'Fire & Safety','Musik/buller (SGAE-licens)':'Music/Noise (SGAE license)','Arbetsavtal':'Employment agreements','Asesoría laboral':'Labor consultant','Skatteregistrering (alta censal, IAE)':'Tax registration (business census, IAE)','Asesoría fiscal':'Tax advisor','Dataskydd (GDPR/LOPD)':'Data Protection (GDPR/LOPD)','Dhaval':'Dhaval','Försäkring':'Insurance','Hyresavtal':'Lease agreement','Juridisk rådgivare':'Legal advisor','FIT Indoor Gym':'FIT Indoor Gym','År 2–3':'Year 2–3','⬡ Community Club':'⬡ Community Club','År 1–2':'Year 1–2','DIG Co-Working':'DIG Co-Working','År 2':'Year 2','EVT Event Hosting':'EVT Event Hosting','År 1':'Year 1','◆ Wellness & Recovery':'◆ Wellness & Recovery','⬡ Fler Locations':'⬡ More Locations','År 3+':'Year 3+','CDP Club-modellen':'The CDP Club Model','Varje hub kombinerar: <strong>Hospitality</strong> (café/bar) + <strong>Community</strong> (events, träning, co-working) + <strong>Commerce</strong> (merch, private label, partnerskap). Kapitaleffektiv replikering i liknande kust- och livsstilsmarknader.':'Each hub combines: <strong>Hospitality</strong> (café/bar) + <strong>Community</strong> (events, fitness, co-working) + <strong>Commerce</strong> (merch, private label, partnerships). Capital-efficient replication in similar coastal and lifestyle markets.'
+    },
+    es:{
+      'Setup Cost':'Costo de Configuración','Hyra':'Alquiler','Till launch':'Hasta lanzamiento','veckor':'semanas','dag':'día','Breakeven':'Punto de equilibrio',
+      'Bar & Cafeteria':'Bar y Cafetería','Lean Phase 1: drycker, kaffe, enkel tapas, hälsosamma snacks. Ingen fullskalig restaurang. Minimerar personal, licensering och matsvinn.':'Fase Lean 1: bebidas, café, tapas simples, snacks saludables. Sin restaurante completo. Minimiza personal, licencias y desperdicio.','Utomhusmiljö':'Entorno Exterior','Costa del Sol = uteservering är huvudattraktionen. 8–10 månader per år. Komfort, estetik och community-känsla.':'Costa del Sol = el servicio al aire libre es la atracción principal. 8–10 meses por año. Comodidad, estética y sentido de comunidad.','Community Hub':'Centro Comunitario','Community-driven':'Impulsado por la comunidad','Content Engine':'Motor de Contenido','Lifestyle-brand':'Marca de Estilo de Vida','Nätverkseffekta':'Sinergia de Ecosistema','Kundsegment':'Segmentos de Clientes','CDP Community':'Comunidad CDP','Hälsomedvetna Expats':'Expatriados Conscientes de la Salud','Lokala invånare':'Residentes Locales','Walk-in / Turister':'Visitantes / Turistas','Setup-kostnader':'Costos de Configuración','Djuprengöring':'Limpieza profunda','Utemöbler & setup':'Muebles y configuración exterior','Inredning':'Decoración interior','Skyltar & branding':'Señalización y marca','POS-system':'Sistema POS','Initialt lager':'Inventario inicial','Admin & juridik':'Administración y legal','Reserv':'Reserva','TOTALT SETUP':'TOTAL CONFIGURACIÓN','Månatliga fasta kostnader':'Costos Fijos Mensuales','Team (4 pers)':'Equipo (4 personas)','Utilities':'Servicios','Försäkring':'Seguro','Bokföring/gestor':'Contabilidad/Gestor','Övrigt':'Otros','TOTALT/MÅNAD':'TOTAL/MES','Intäktsscenarier':'Escenarios de Ingresos','Försiktig':'Conservador','Basfall':'Caso Base','Uppsida':'Al Alza','kunder/dag':'clientes/día','Marginal':'Margen','Framtida tillväxtstrategier':'Estrategias de Crecimiento Futuro','Event-intäkter':'Ingresos por Eventos','Beach Butler-integration':'Integración Beach Butler','Merch & Private Label':'Mercancía y Marca Privada','Digital membership':'Membresía Digital','Totalt kapitalbehov':'Necesidad Total de Capital','Setup & renovering':'Configuración y Renovación','Driftbudget':'Presupuesto operativo','Rörelsekapital & reserv':'Capital de trabajo y reserva','Riskreducering':'Reducción de Riesgos','Licensförseningar':'Retrasos en Licencias','Intäkter under breakeven':'Ingresos por Debajo del Punto de Equilibrio','Säsongsvariation':'Variación Estacional','Nyckelpersonberoende':'Dependencia de Persona Clave','Hyresrisk':'Riesgo de Arrendamiento','Medel / Hög':'Medio / Alto','Hög / Medel':'Alto / Medio','Låg / Hög':'Bajo / Alto','Bolagsstruktur (SL/autónomo)':'Estructura de Empresa (SL/autónomo)','Verksamhetslicens (licencia de actividad)':'Licencia de Negocio (licencia de actividad)','Livsmedelshantering (registro sanitario)':'Manejo de Alimentos (registro sanitario)','Terrasslov':'Permiso de Terraza','Brand & säkerhet':'Incendios y Seguridad','Musik/buller (SGAE-licens)':'Música/Ruido (licencia SGAE)','Arbetsavtal':'Contratos de Empleo','Skatteregistrering (alta censal, IAE)':'Registro Fiscal (censo empresarial, IAE)','Dataskydd (GDPR/LOPD)':'Protección de Datos (GDPR/LOPD)','Hyresavtal':'Contrato de Arrendamiento','FIT Indoor Gym':'Gimnasio FIT Interior','År 2–3':'Año 2–3','DIG Co-Working':'DIG Co-Working','År 2':'Año 2','EVT Event Hosting':'EVT Alojamiento de Eventos','År 1':'Año 1','Wellness & Recovery':'Bienestar y Recuperación','Fler Locations':'Más Ubicaciones','År 3+':'Año 3+','CDP Club-modellen':'El Modelo CDP Club'
+    },
+    ru:{
+      'Setup Cost':'Стоимость установки','Hyra':'Аренда','Till launch':'До запуска','veckor':'недель','dag':'день','Breakeven':'Точка безубыточности',
+      'Bar & Cafeteria':'Бар и кафе','Utomhusmiljö':'Открытая среда','Community Hub':'Хаб сообщества','Community-driven':'Управляется сообществом','Content Engine':'Механизм контента','Lifestyle-brand':'Бренд образа жизни','Nätverkseffekta':'Синергия экосистемы','Kundsegment':'Сегменты клиентов','CDP Community':'Сообщество CDP','Hälsomedvetna Expats':'Эмигранты, сознательные в отношении здоровья','Lokala invånare':'Местные жители','Walk-in / Turister':'Посетители / Туристы','Setup-kostnader':'Затраты на установку','Djuprengöring':'Глубокая чистка','Utemöbler & setup':'Наружная мебель и установка','Inredning':'Интерьер','Skyltar & branding':'Вывески и брендирование','POS-system':'POS-система','Initialt lager':'Начальный запас','Admin & juridik':'Администрация и право','Reserv':'Резерв','TOTALT SETUP':'ИТОГО УСТАНОВКА','Månatliga fasta kostnader':'Ежемесячные фиксированные расходы','Team (4 pers)':'Команда (4 человека)','Utilities':'Коммунальные услуги','Försäkring':'Страховка','Bokföring/gestor':'Бухгалтерия/Менеджер','Övrigt':'Прочее','TOTALT/MÅNAD':'ИТОГО/МЕСЯЦ','Intäktsscenarier':'Сценарии доходов','Försiktig':'Осторожный','Basfall':'Базовый','Uppsida':'Верхний','kunder/dag':'клиентов/день','Marginal':'Маржа','Framtida tillväxtstrategier':'Стратегии будущего роста','Event-intäkter':'Доход от событий','Beach Butler-integration':'Интеграция Beach Butler','Merch & Private Label':'Товары и собственный бренд','Digital membership':'Цифровое членство','Totalt kapitalbehov':'Общая потребность в капитале','Setup & renovering':'Установка и ремонт','Driftbudget':'Операционный бюджет','Rörelsekapital & reserv':'Оборотный капитал и резерв','Riskreducering':'Снижение рисков','Licensförseningar':'Задержки с лицензией','Intäkter under breakeven':'Доход ниже точки безубыточности','Säsongsvariation':'Сезонная вариация','Nyckelpersonberoende':'Зависимость от ключевого лица','Hyresrisk':'Риск аренды','Medel / Hög':'Средний / Высокий','Hög / Medel':'Высокий / Средний','Låg / Hög':'Низкий / Высокий','Bolagsstruktur (SL/autónomo)':'Структура компании (SL/автономный)','Verksamhetslicens (licencia de actividad)':'Лицензия на деятельность','Livsmedelshantering (registro sanitario)':'Обработка пищевых продуктов (санитарный реестр)','Terrasslov':'Разрешение на террасу','Brand & säkerhet':'Пожары и безопасность','Musik/buller (SGAE-licens)':'Музыка/Шум (лицензия SGAE)','Arbetsavtal':'Трудовые договоры','Skatteregistrering (alta censal, IAE)':'Налоговая регистрация','Dataskydd (GDPR/LOPD)':'Защита данных (GDPR/LOPD)','Hyresavtal':'Договор аренды','FIT Indoor Gym':'Крытый спортзал FIT','År 2–3':'Год 2–3','DIG Co-Working':'DIG Совместная работа','År 2':'Год 2','EVT Event Hosting':'EVT Размещение событий','År 1':'Год 1','Wellness & Recovery':'Оздоровление и восстановление','Fler Locations':'Больше местоположений','År 3+':'Год 3+','CDP Club-modellen':'Модель CDP Club'
+    }
+  };
+  const tr=d[LN];
+  if(!tr)return h;
+  const keys=Object.keys(tr).sort((a,b)=>b.length-a.length);
+  keys.forEach(k=>{h=h.split(k).join(tr[k])});
+  return h;
+}
+
+function sn(id){if(SN&&SN.id!==id)NAV_HIST.push(SN.id);if(NAV_HIST.length>20)NAV_HIST.shift();SN=N.find(n=>n.id===id);if(!SN)return;document.getElementById('ap').classList.remove('v');const n=SN;
+const rels=E.filter(e=>e.f===id||e.t===id).map(e=>{const tid=e.f===id?e.t:e.f;return{tid,tn:N.find(x=>x.id===tid),dir:e.f===id?'→':'←',y:e.y,s:e.s}});
+let h=`<div class="sh">${NAV_HIST.length?`<button class="sx" style="right:38px" onclick="event.stopPropagation();sn(NAV_HIST.pop())">←</button>`:''}<button class="sx" onclick="cp()">✕</button><span class="sh-ic">${n.i}</span><div class="sh-t">${gl(n.l)}</div><div class="sh-cat">${cl(n.c)}</div><span class="badge st-${n.s}">${sl2(n.s)}</span></div>`;
+h+=`<div class="ss"><div class="ss-t">${t('sd')}</div>${fmtDesc(gl(n.d))}</div>`;
+if(n.st)h+=sec(t('sst'),`<div class="ss-str">${gl(n.st)}</div>`);
+if(n.hi)h+=sec(t('shi'),`<div class="ss-hi"><p>${gl(n.hi)}</p></div>`,'open');
+if(n.m?.length){let mc=`<div class="mg">`;n.m.forEach(m=>{mc+=`<div class="mc"><div class="mc-l">${t(m.l)||m.l}</div><div class="mc-v">${m.v}</div>${m.s?`<div class="mc-s">${m.s}</div>`:''}</div>`});mc+=`</div>`;h+=sec(t('sm'),mc)}
+if(n.pt){h+=sec(t('spt'),`<div class="ptags">${n.pt.map(p=>`<span class="ptag">${p}</span>`).join('')}</div>`)}
+if(n.tm?.length){let tc='';n.tm.forEach(q=>{tc+=`<div class="tq"><q>${q.q}</q><cite> - ${q.a}</cite></div>`});h+=sec(t('stm'),tc)}
+let rc='';rels.forEach(r=>{if(!r.tn)return;const sc=r.s==='strong'?'var(--green)':r.s==='medium'?'var(--orange)':r.s==='potential'?'var(--blue)':'var(--purple)';
+rc+=`<div class="rl" onclick="sn('${r.tid}')"><div class="rl-d" style="background:${sc}"></div><span class="rl-a">${r.dir}</span><span class="rl-n">${r.tn.i} ${gl(r.tn.l)}</span><span class="rl-t">${t(r.y)||r.y}</span></div>`});
+h+=sec(`${t('sr')} (${rels.length})`,rc);
+if(n.o){let oc='';n.o.forEach(o=>{const otxt=gl(o);const linked=N.find(x=>otxt.toLowerCase().includes(gl(x.l).toLowerCase().substring(0,6))&&x.id!==id);
+oc+=linked?`<div class="opp" onclick="fn('${linked.id}')" title="${otxt} → ${gl(linked.l)}">${otxt}</div>`:`<div class="opp">${otxt}</div>`;});h+=sec(t('so'),oc)}
+if(n.bp&&n.bp.length){
+h+=`<div class="ss"><div class="ss-t" style="font-size:12px;color:var(--accent);border-bottom:2px solid var(--accent);padding-bottom:6px;margin-bottom:12px">${LN==='en'?'BUSINESS PLAN':LN==='es'?'PLAN DE NEGOCIO':LN==='ru'?'БИЗНЕС-ПЛАН':'AFFÄRSPLAN'}</div>`;
+h+=`<div class="bp-nav" id="bpnav">`;
+n.bp.forEach((s,i)=>{h+=`<div class="bp-nav-item${i===0?' bp-active':''}" onclick="showBP(${i})" data-bpi="${i}"><span class="bp-nav-num">${i+1}</span><span class="bp-nav-icon">${s.icon}</span>${gl(s.t)}</div>`;});
+h+=`</div>`;
+n.bp.forEach((s,i)=>{h+=`<div class="bp-section${i===0?' bp-visible':''}" data-bps="${i}"><div class="bp-section-title"><span>${s.icon}</span>${gl(s.t)}</div>${bpTr(s.body)}<div class="bp-footer">${i>0?`<button class="bp-btn" onclick="showBP(${i-1})">← ${LN==='en'?'Previous':LN==='es'?'Anterior':LN==='ru'?'Предыдущая':'Föregående'}</button>`:'<div></div>'}${i<n.bp.length-1?`<button class="bp-btn bp-btn-primary" onclick="showBP(${i+1})">${LN==='en'?'Next':LN==='es'?'Siguiente':LN==='ru'?'Далее':'Nästa'} →</button>`:`<button class="bp-btn" onclick="exportBP()" title="Download PDF">PDF ↓</button><button class="bp-btn bp-btn-primary" onclick="window.open('CDP-Club-BusinessPlan.html','_blank')">${LN==='en'?'Open full plan':LN==='es'?'Abrir plan completo':LN==='ru'?'Открыть полный план':'Öppna full plan'} ↗</button>`}</div></div>`;});
+h+=`</div>`;
+}
+document.getElementById('spi').innerHTML=h;document.getElementById('sp').classList.add('open')}
+function cp(){document.getElementById('sp').classList.remove('open');SN=null}
+function showBP(i){document.querySelectorAll('.bp-nav-item').forEach(el=>el.classList.toggle('bp-active',parseInt(el.dataset.bpi)===i));document.querySelectorAll('.bp-section').forEach(el=>el.classList.toggle('bp-visible',parseInt(el.dataset.bps)===i));document.querySelector('.bp-section.bp-visible')?.scrollIntoView({behavior:'smooth',block:'start'})}
+
+let st;function hs(q){clearTimeout(st);const r=document.getElementById('sr');if(!q.trim()){r.classList.remove('v');return}
+st=setTimeout(()=>{const ql=q.toLowerCase();const ms=N.filter(n=>gl(n.l).toLowerCase().includes(ql)||gl(n.d).toLowerCase().includes(ql)||n.id.includes(ql));
+if(!ms.length){r.classList.remove('v');return}
+r.innerHTML=ms.map(n=>`<div class="sri" onclick="fn('${n.id}')"><span class="sri-i">${n.i}</span><div style="flex:1"><div class="sri-n">${gl(n.l)}</div><div class="sri-c">${cl(n.c)}</div></div><span class="sri-s st-${n.s}">${sl2(n.s)}</span></div>`).join('');
+r.classList.add('v')},180)}
+function fn(id){document.getElementById('sr').classList.remove('v');document.getElementById('si').value='';if(CV!=='map')sw('map');net.focus(id,{scale:1.3,animation:{duration:500,easingFunction:'easeInOutQuad'}});net.selectNodes([id]);setTimeout(()=>sn(id),250)}
+document.addEventListener('click',e=>{if(!e.target.closest('#sb'))document.getElementById('sr').classList.remove('v')});
+
+function riv(){
+const iv=document.getElementById('iv');const vn=N.filter(n=>n.iv);
+const core=vn.filter(n=>n.c==='core'),grow=vn.filter(n=>n.c==='growth'),exp=vn.filter(n=>n.c==='expansion'||n.c==='support');
+const tms=[
+{q:"CDP saved my life. Without them, I don't know where I'd be.",a:"Alex"},
+{q:"CDP helped me crawl out of the darkest hole I've ever been in. I am forever grateful.",a:"Gaby"},
+{q:"CDP has given me strength, endurance and the belief that if I give 1% every day, I'll reach my goals.",a:"Janice"},
+{q:"It's my safe zone. It's like my second family.",a:"Sofi"},
+{q:"Being part of CDP means more than just doing sport. They make exercise feel fun, not boring.",a:"Encarni"},
+{q:"Best food in Torrevieja! Everything done to perfection.",a:"Cabana Review"},
+{q:"CDP is not a restaurant. Not a gym. Not an app. It is all of them - working together. That is the advantage.",a:"CDP Business Plan"}
+];
+iv.innerHTML=`<div class="ivc">
+<div class="ivh"><h2>${t('hero')}  - <b>${t('sub')}</b></h2><p>${t('desc')}</p>
+<div class="ivhs">
+<div class="ivhv"><strong>59</strong><small>${t('countries')}</small></div>
+<div class="ivhv"><strong>12.9K</strong><small>${t('ig2')}</small></div>
+<div class="ivhv"><strong>14+</strong><small>${t('cw')}</small></div>
+<div class="ivhv"><strong>8+</strong><small>${t('lang')}</small></div>
+<div class="ivhv"><strong>€0</strong><small>${t('zero')}</small></div>
+<div class="ivhv"><strong>2022</strong><small>${t('founded')}</small></div>
+</div></div>
+<div class="ivs"><div class="ivs-t">${t('ilo')}</div><div class="ivl">${IL.map(l=>`<div class="ivli"><b>${gl(l.t)}</b><p>${gl(l.d)}</p></div>`).join('')}</div></div>
+<div class="ivs"><div class="ivs-t">${t('ic')}</div><div class="ivg">${core.map(n=>ic(n)).join('')}</div></div>
+<div class="ivs"><div class="ivs-t">${t('ig')}</div><div class="ivg">${grow.map(n=>ic(n)).join('')}</div></div>
+<div class="ivs"><div class="ivs-t">${t('ix')}</div><div class="ivg">${exp.map(n=>ic(n)).join('')}</div></div>
+<div class="ivs"><div class="ivs-t">${t('stm')}</div><div class="ivtg">${tms.map(q=>`<div class="ivtq"><q>${q.q}</q><cite> - ${q.a}</cite></div>`).join('')}</div></div>
+</div>`}
+function ic(n){const d=gl(n.d);return`<div class="icard" onclick="sw('map');setTimeout(()=>fn('${n.id}'),200)"><div class="icard-i">${n.i}</div><div class="icard-t">${gl(n.l)}</div><div class="icard-d">${d.substring(0,110)}${d.length>110?'...':''}</div><div class="icard-s"><span class="badge st-${n.s}">${sl2(n.s)}</span></div></div>`}
+
+function rap(){const ap=document.getElementById('ap');let h=`<div class="at">${t('ad')}</div>`;
+['core','growth','expansion','support'].forEach(c=>{
+h+=`<div style="margin:14px 0 6px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-weight:700">${cl(c)}</div>`;
+N.filter(n=>n.c===c).forEach(n=>{h+=`<div class="an"><span class="an-i">${n.i}</span><span class="an-n">${gl(n.l)}</span><div class="tgl ${n.iv?'on':''}" onclick="tiv('${n.id}',this)"></div></div>`})});
+ap.innerHTML=h}
+function tiv(id,el){const n=N.find(x=>x.id===id);if(!n)return;n.iv=!n.iv;el.classList.toggle('on',n.iv);riv()}
+
+// ===== AI ASSISTANT MODULE =====
+let AI_KEY='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',AI_ADMIN=false,AI_MSGS=[],AI_HIST=[];
+const AI_PASS='cdp2026';
+
+function aiToggle(){
+  const p=document.getElementById('ai-panel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')&&!AI_MSGS.length){
+    aiAddMsg('assistant',aiWelcome());
+  }
+}
+
+function aiWelcome(){
+  const w={
+    sv:'Hej! Jag är CDP:s AI-assistent. Jag har tillgång till hela ekosystemets data  - noder, affärsplan, team, KPI:er och mer. Ställ en fråga, så hjälper jag dig navigera och förstå CDP-ekosystemet.',
+    en:'Hi! I\'m CDP\'s AI assistant. I have access to the full ecosystem data  - nodes, business plan, team, KPIs and more. Ask me anything and I\'ll help you navigate and understand the CDP ecosystem.',
+    es:'¡Hola! Soy el asistente IA de CDP. Tengo acceso a todos los datos del ecosistema. Pregúntame lo que quieras.',
+    ru:'Привет! Я ИИ-ассистент CDP. У меня есть доступ ко всем данным экосистемы. Спрашивайте!'
+  };
+  return w[LN]||w.en;
+}
+
+function aiAddMsg(role,text){
+  AI_MSGS.push({role,text,time:new Date()});
+  const mc=document.getElementById('ai-messages');
+  const div=document.createElement('div');
+  div.className='ai-msg '+role;
+  let html=text.replace(/\[Navigate:\s*([^\]]+)\]/g,(m,name)=>{
+    const node=N.find(n=>gl(n.l).toLowerCase().includes(name.toLowerCase())||n.id===name.toLowerCase().replace(/\s/g,'_'));
+    if(node)return`<a onclick="fn('${node.id}');aiToggle()">${gl(node.l)} →</a>`;
+    return name;
+  });
+  html=html.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+  html=html.replace(/\n/g,'<br>');
+  div.innerHTML=`<div class="ai-bubble">${html}</div>`;
+  mc.appendChild(div);
+  mc.scrollTop=mc.scrollHeight;
+}
+
+function aiGetContext(){
+  let ctx='CDP Ecosystem Data (Coaches Don\'t Play):\n\n';
+  N.forEach(n=>{
+    ctx+=`NODE: ${gl(n.l)} [${n.id}]  - Status: ${n.s}, Category: ${n.c}\n`;
+    ctx+=`Description: ${gl(n.d).substring(0,300)}\n`;
+    if(n.st)ctx+=`Strategic: ${gl(n.st).substring(0,200)}\n`;
+    if(n.m)ctx+=`Metrics: ${n.m.map(m=>m.l+': '+m.v).join(', ')}\n`;
+    if(n.bp){
+      ctx+=`BUSINESS PLAN (${n.bp.length} sections):\n`;
+      n.bp.forEach((s,i)=>{
+        const tmp=document.createElement('div');tmp.innerHTML=s.body;
+        ctx+=`  ${i+1}. ${gl(s.t)}: ${tmp.textContent.substring(0,300)}\n`;
+      });
+    }
+    ctx+='\n';
+  });
+  ctx+='\nINVESTOR INSIGHTS:\n';
+  IL.forEach(l=>{ctx+=`- ${gl(l.t)}: ${gl(l.d)}\n`});
+  return ctx;
+}
+
+async function aiSend(){
+  const input=document.getElementById('ai-input');
+  const q=input.value.trim();
+  if(!q)return;
+  input.value='';
+  aiAddMsg('user',q);
+
+  const mc=document.getElementById('ai-messages');
+  const typing=document.createElement('div');
+  typing.className='ai-typing';
+  typing.id='ai-typing';
+  typing.textContent=LN==='sv'?'Tänker...':LN==='es'?'Pensando...':LN==='ru'?'Думаю...':'Thinking...';
+  mc.appendChild(typing);
+  mc.scrollTop=mc.scrollHeight;
+
+  if(!AI_KEY){
+    document.getElementById('ai-typing')?.remove();
+    aiAddMsg('assistant',LN==='sv'?'Jag behöver en OpenAI API-nyckel för att fungera. Klicka på ⚙ ovan för att lägga till din nyckel.':'I need an OpenAI API key to function. Click ⚙ above to add your key.');
+    return;
+  }
+
+  const sysPrompt=`You are CDP\'s AI assistant embedded in the "CDP Living System" interactive dashboard. You have deep knowledge of the entire Coaches Don\'t Play ecosystem.
+
+IMPORTANT RULES:
+- Answer in the same language the user writes in (Swedish, English, Spanish, or Russian)
+- Keep answers concise but informative (2-4 paragraphs max)
+- When referencing a node/section, include a navigation link using format: [Navigate: node_id] e.g. [Navigate: cdp_club]
+- Use **bold** for emphasis
+- If asked about the business plan, reference specific sections
+- You represent CDP professionally  - be confident, knowledgeable, inspiring
+${AI_ADMIN?'- ADMIN MODE: The user is an admin. They can ask you to draft changes to node descriptions, statuses, etc. Format change proposals clearly.':'- PUBLIC MODE: Read-only. Answer questions helpfully but do not suggest edits.'}
+
+ECOSYSTEM DATA:
+${aiGetContext()}`;
+
+  const messages=[
+    {role:'system',content:sysPrompt},
+    ...AI_HIST.slice(-8),
+    {role:'user',content:q}
+  ];
+
+  try{
+    const res=await fetch('https://api.openai.com/v1/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+AI_KEY},
+      body:JSON.stringify({model:'gpt-4o-mini',messages,temperature:0.7,max_tokens:1000})
+    });
+    const data=await res.json();
+    document.getElementById('ai-typing')?.remove();
+
+    if(data.error){
+      aiAddMsg('assistant','Error: '+data.error.message);
+      return;
+    }
+
+    const reply=data.choices[0].message.content;
+    AI_HIST.push({role:'user',content:q},{role:'assistant',content:reply});
+    aiAddMsg('assistant',reply);
+  }catch(e){
+    document.getElementById('ai-typing')?.remove();
+    aiAddMsg('assistant','Connection error. Please check your API key and try again.');
+  }
+}
+
+function aiAdminLogin(){
+  document.getElementById('ai-login').classList.add('v');
+}
+
+function aiCheckLogin(){
+  const pw=document.getElementById('ai-pw').value;
+  if(pw===AI_PASS){
+    AI_ADMIN=true;
+    document.getElementById('ai-login').classList.remove('v');
+    document.getElementById('ai-admin-btn').classList.add('admin-on');
+    document.getElementById('ai-admin-btn').textContent='Admin ✓';
+    document.getElementById('ai-admin-bar').classList.add('v');
+    aiAddMsg('assistant',LN==='sv'?'Admin-läge aktiverat. Du kan nu be mig föreslå ändringar i noder, uppdatera status, lägga till information etc.':'Admin mode activated. You can now ask me to propose changes to nodes, update status, add information etc.');
+  }else{
+    document.getElementById('ai-login-err').style.display='block';
+  }
+}
+
+function aiSetKey(){
+  const ks=document.getElementById('ai-key-setup');
+  ks.classList.toggle('v');
+}
+
+function aiSaveKey(){
+  AI_KEY=document.getElementById('ai-key-input').value.trim();
+  document.getElementById('ai-key-setup').classList.remove('v');
+  if(AI_KEY){
+    aiAddMsg('assistant',LN==='sv'?'API-nyckel sparad. Jag är redo att svara på frågor!':'API key saved. I\'m ready to answer questions!');
+  }
+}
+
+function aiDownload(){
+  if(!AI_MSGS.length)return;
+  let txt='CDP AI Assistant  - Conversation Log\n';
+  txt+='Date: '+new Date().toISOString().split('T')[0]+'\n';
+  txt+='='+ '='.repeat(50)+'\n\n';
+  AI_MSGS.forEach(m=>{
+    txt+=`[${m.role.toUpperCase()}] ${m.time.toLocaleTimeString()}\n${m.text}\n\n`;
+  });
+  const blob=new Blob([txt],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='cdp-ai-chat-'+new Date().toISOString().split('T')[0]+'.txt';
+  a.click();
+}
+
+function exportBP(){
+  const n=SN;if(!n||!n.bp)return;
+  let html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>CDP Club Business Plan</title><style>body{font-family:Inter,system-ui,sans-serif;max-width:800px;margin:40px auto;padding:20px;color:#111;line-height:1.6}h1{font-size:28px;color:#059669;border-bottom:3px solid #059669;padding-bottom:12px}h2{font-size:20px;color:#059669;margin-top:32px;border-bottom:1px solid #ddd;padding-bottom:8px}.bp-stats,.bp-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.bp-stat,.bp-card{border:1px solid #ddd;border-radius:8px;padding:14px;text-align:center}.bp-stat-v,.bp-card-t{font-weight:800;color:#059669;font-size:16px}.bp-stat-l,.bp-card-d{font-size:12px;color:#555;margin-top:4px}.bp-costs{margin:12px 0}.bp-cost-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}.bp-cost-v{font-weight:700}.bp-cost-total{display:flex;justify-content:space-between;padding:8px 12px;background:#f0fdf4;border-radius:6px;margin-top:8px;font-weight:800}.bp-timeline{padding-left:24px;border-left:2px solid #059669}.bp-tl-item{margin-bottom:16px}.bp-tl-week{font-size:11px;font-weight:800;color:#059669}.bp-tl-title{font-weight:700}.bp-tl-desc{font-size:13px;color:#555}.bp-team{margin:12px 0}.bp-member{border:1px solid #ddd;border-radius:8px;padding:14px;margin-bottom:8px}.bp-member-name{font-weight:800;font-size:16px}.bp-member-role{color:#059669;font-weight:700;font-size:12px}.bp-member-comp{font-weight:800;color:#059669;margin-top:4px}.bp-risks{margin:12px 0}.bp-risk{border:1px solid #ddd;border-radius:8px;padding:14px;margin-bottom:8px}.bp-risk-name{font-weight:700}.bp-quote{border-left:3px solid #059669;padding:12px 16px;background:#f0fdf4;font-style:italic;margin:16px 0}.bp-sub{font-weight:800;color:#059669;margin:20px 0 8px;border-bottom:1px solid #ddd;padding-bottom:4px}.bp-scenarios{margin:12px 0}.bp-scenario{border:1px solid #ddd;border-radius:8px;padding:14px;margin-bottom:8px}.bp-sc-name{font-weight:800;font-size:14px}.bp-sc-rev{font-size:18px;font-weight:900;color:#059669}.bp-invest-total{text-align:center;padding:24px;background:#f0fdf4;border:2px solid #059669;border-radius:12px;margin:16px 0}.bp-invest-amount{font-size:32px;font-weight:900;color:#059669}.bp-p{margin-bottom:10px}.bp-p strong{color:#111}.bp-note{background:#f9f9f9;padding:12px;border-radius:8px;font-size:12px;color:#555}.bp-check{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #eee}.bp-expand{display:grid;grid-template-columns:1fr 1fr;gap:8px}.bp-exp-item{border:1px solid #ddd;border-radius:8px;padding:10px;display:flex;justify-content:space-between}.bp-exp-time{color:#059669;font-weight:700}.bp-checklist{margin:12px 0}.bp-card-icon{font-size:18px}.bp-card-detail{margin-top:6px;font-size:11px;color:#555}@media print{body{margin:20px}h1{font-size:24px}}</style></head><body>';
+  html+='<h1>CDP Club - Business Plan</h1>';
+  html+='<p style="color:#555">Generated '+new Date().toLocaleDateString()+'</p>';
+  n.bp.forEach((s,i)=>{
+    html+='<h2>'+(i+1)+'. '+gl(s.t)+'</h2>';
+    html+=bpTr(s.body);
+  });
+  html+='</body></html>';
+  const w=window.open('','_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(()=>{w.print()},500);
+}
+
+window.addEventListener('DOMContentLoaded',function(){if(document.getElementById('pw-gate').classList.contains('hidden'))init();});
+</script>
+</body>
+</html>
