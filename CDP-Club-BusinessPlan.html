@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDP Club Lighthouse Hub — Business Plan 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0A0A0F;
+            --surface-1: #12121E;
+            --surface-2: #1A1A2C;
+            --gold: #C8A96E;
+            --text-light: #E8E8F0;
+            --text-muted: #A8A8B8;
+            --success: #4ECB71;
+            --warning: #F5A623;
+            --danger: #E74C3C;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body.dark-mode {
+            --bg-dark: #0A0A0F;
+            --surface-1: #12121E;
+            --surface-2: #1A1A2C;
+            --text-light: #E8E8F0;
+            --text-muted: #A8A8B8;
+        }
+
+        body.light-mode {
+            --bg-dark: #F5F5F7;
+            --surface-1: #FFFFFF;
+            --surface-2: #F0F0F5;
+            --text-light: #1A1A2A;
+            --text-muted: #666666;
+        }
+
+        /* Sticky Navigation Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--surface-1);
+            border-right: 1px solid rgba(200, 169, 110, 0.1);
+            overflow-y: auto;
+            padding: 2rem 1.5rem;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(200, 169, 110, 0.1);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--gold);
+            letter-spacing: 0.5px;
+        }
+
+        .theme-toggle {
+            background: var(--surface-2);
+            border: 1px solid rgba(200, 169, 110, 0.2);
+            color: var(--gold);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: var(--surface-2);
+            border-color: var(--gold);
+        }
+
+        .nav-list {
+            list-style: none;
+            flex: 1;
+            margin-bottom: 2rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link:hover {
+            color: var(--gold);
+            background: var(--surface-2);
+            border-left-color: var(--gold);
+        }
+
+        .nav-link.active {
+            color: var(--gold);
+            background: rgba(200, 169, 110, 0.1);
+            border-left-color: var(--gold);
+        }
+
+        .pdf-button-sidebar {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--gold);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .pdf-button-sidebar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(200, 169, 110, 0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 3rem 4rem;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--gold);
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: var(--gold);
+            border-radius: 2px;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            margin-top: 1rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, rgba(200, 169, 110, 0.1), rgba(200, 169, 110, 0.05));
+            border: 1px solid rgba(200, 169, 110, 0.2);
+            border-radius: 12px;
+            padding: 4rem;
+            margin-bottom: 3rem;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--gold);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(200, 169, 110, 0.2);
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .meta-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--gold);
+        }
+
+        /* Key Stats Row */
+        .key-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: var(--surface-2);
+            border: 1px solid rgba(200, 169, 110, 0.2);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(200, 169, 110, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Card Grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .card {
+            background: var(--surface-2);
+            border: 1px solid rgba(200, 169, 110, 0.2);
+            border-radius: 10px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold), transparent);
+        }
+
+        .card:hover {
+            border-color: var(--gold);
+            transform: translateY(-6px);
+            box-shadow: 0 16px 32px rgba(200, 169, 110, 0.15);
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 0.75rem;
+        }
+
+        .card-content {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* Timeline */
+        .timeline {
+            margin: 2rem 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 40px;
+            bottom: -30px;
+            width: 2px;
+            background: rgba(200, 169, 110, 0.3);
+        }
+
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .timeline-marker {
+            width: 40px;
+            height: 40px;
+            background: var(--surface-2);
+            border: 2px solid var(--gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold);
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-right: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline-content {
+            flex: 1;
+            padding-top: 0.25rem;
+        }
+
+        .timeline-title {
+            font-weight: 700;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-description {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        /* Expandable Sections */
+        .expandable {
+            background: var(--surface-2);
+            border: 1px solid rgba(200, 169, 110, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .expandable-header {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface-2);
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .expandable-header:hover {
+            background: rgba(200, 169, 110, 0.05);
+        }
+
+        .expandable-title {
+            font-weight: 600;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .expandable-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+            color: var(--gold);
+        }
+
+        .expandable.active .expandable-icon {
+            transform: rotate(180deg);
+        }
+
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0 1.5rem;
+        }
+
+        .expandable.active .expandable-content {
+            max-height: 1000px;
+            padding: 0 1.5rem 1.5rem 1.5rem;
+        }
+
+        .content-inner {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        /* Table */
+        .risk-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: var(--surface-2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .risk-table th {
+            background: rgba(200, 169, 110, 0.1);
+            color: var(--gold);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(200, 169, 110, 0.2);
+        }
+
+        .risk-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(200, 169, 110, 0.1);
+            color: var(--text-light);
+        }
+
+        .risk-table tr:hover {
+            background: rgba(200, 169, 110, 0.05);
+        }
+
+        .risk-low { color: var(--success); font-weight: 600; }
+        .risk-medium { color: var(--warning); font-weight: 600; }
+        .risk-high { color: var(--danger); font-weight: 600; }
+
+        /* Charts & Lists */
+        .chart-container {
+            background: var(--surface-2);
+            border: 1px solid rgba(200, 169, 110, 0.2);
+            border-radius: 10px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .bar-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .bar-label-text {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .bar-value {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .bar {
+            width: 100%;
+            height: 12px;
+            background: var(--surface-1);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold), #D4B896);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .icon-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .icon-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .icon-circle {
+            width: 40px;
+            height: 40px;
+            background: rgba(200, 169, 110, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold);
+            flex-shrink: 0;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .icon-text {
+            flex: 1;
+        }
+
+        .icon-title {
+            color: var(--gold);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .icon-description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Revenue Cards */
+        .revenue-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .revenue-card {
+            background: var(--surface-2);
+            border-left: 4px solid;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .revenue-card.cautious {
+            border-left-color: var(--danger);
+        }
+
+        .revenue-card.base {
+            border-left-color: var(--gold);
+        }
+
+        .revenue-card.upside {
+            border-left-color: var(--success);
+        }
+
+        .revenue-scenario {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .revenue-card.cautious .revenue-scenario { color: var(--danger); }
+        .revenue-card.base .revenue-scenario { color: var(--gold); }
+        .revenue-card.upside .revenue-scenario { color: var(--success); }
+
+        .revenue-range {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .revenue-margin {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .revenue-card.cautious .revenue-margin { color: var(--danger); }
+        .revenue-card.base .revenue-margin { color: var(--gold); }
+        .revenue-card.upside .revenue-margin { color: var(--success); }
+
+        /* Button */
+        .pdf-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--gold);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+
+        .pdf-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(200, 169, 110, 0.3);
+        }
+
+        /* Callout */
+        .callout {
+            background: rgba(200, 169, 110, 0.1);
+            border-left: 4px solid var(--gold);
+            padding: 1.5rem;
+            border-radius: 6px;
+            margin: 1.5rem 0;
+            color: var(--text-light);
+        }
+
+        .callout strong {
+            color: var(--gold);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid rgba(200, 169, 110, 0.1);
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                padding: 1rem;
+                z-index: 101;
+            }
+
+            .sidebar-header {
+                margin-bottom: 0;
+                padding-bottom: 0;
+                border-bottom: none;
+            }
+
+            .nav-list {
+                display: none;
+                position: absolute;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: var(--surface-1);
+                flex-direction: column;
+                width: 100%;
+                margin-bottom: 0;
+                border-bottom: 1px solid rgba(200, 169, 110, 0.1);
+                max-height: 400px;
+                overflow-y: auto;
+            }
+
+            .nav-list.active {
+                display: flex;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 2rem 1.5rem;
+            }
+
+            .hero {
+                padding: 2rem 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-meta {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .section-title {
+                font-size: 1.8rem;
+            }
+
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .key-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .sidebar,
+            .theme-toggle,
+            .pdf-button,
+            .pdf-button-sidebar {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 2rem;
+            }
+
+            .section {
+                page-break-inside: avoid;
+                margin-bottom: 2rem;
+            }
+
+            .section-title {
+                page-break-after: avoid;
+            }
+
+            .card,
+            .chart-container,
+            .expandable {
+                page-break-inside: avoid;
+            }
+
+            body {
+                background: white;
+                color: black;
+            }
+
+            body.light-mode,
+            body.dark-mode {
+                --bg-dark: white;
+                --surface-1: white;
+                --surface-2: #F5F5F5;
+                --text-light: black;
+                --text-muted: #333333;
+                --gold: #A67C52;
+            }
+
+            .card,
+            .stat-card,
+            .expandable,
+            .hero {
+                border-color: #CCCCCC;
+            }
+
+            a {
+                text-decoration: none;
+                color: black;
+            }
+
+            @page {
+                margin: 1in;
+            }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">CDP CLUB</div>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">☀️</button>
+        </div>
+
+        <ul class="nav-list" id="navList">
+            <li class="nav-item">
+                <a href="#executive-summary" class="nav-link active">Executive Summary</a>
+            </li>
+            <li class="nav-item">
+                <a href="#business-concept" class="nav-link">Business Concept</a>
+            </li>
+            <li class="nav-item">
+                <a href="#rollout-plan" class="nav-link">Rollout & Launch</a>
+            </li>
+            <li class="nav-item">
+                <a href="#market-positioning" class="nav-link">Market Positioning</a>
+            </li>
+            <li class="nav-item">
+                <a href="#operational-model" class="nav-link">Operational Model</a>
+            </li>
+            <li class="nav-item">
+                <a href="#team-roles" class="nav-link">Team & Roles</a>
+            </li>
+            <li class="nav-item">
+                <a href="#legal-compliance" class="nav-link">Legal & Compliance</a>
+            </li>
+            <li class="nav-item">
+                <a href="#financial-framework" class="nav-link">Financial Framework</a>
+            </li>
+            <li class="nav-item">
+                <a href="#investment-case" class="nav-link">Investment Case</a>
+            </li>
+            <li class="nav-item">
+                <a href="#expansion-potential" class="nav-link">Expansion Potential</a>
+            </li>
+            <li class="nav-item">
+                <a href="#grants-funding" class="nav-link">Grants & Funding</a>
+            </li>
+            <li class="nav-item">
+                <a href="#risk-analysis" class="nav-link">Risk Analysis</a>
+            </li>
+        </ul>
+
+        <button class="pdf-button-sidebar" onclick="window.print()">📄 Download PDF</button>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Executive Summary -->
+        <section class="section" id="executive-summary">
+            <div class="hero">
+                <h1>POLKA TAKEOVER</h1>
+                <p>CDP Club / Lighthouse Hub</p>
+                <p style="font-size: 1rem; color: var(--text-muted); margin-top: 1.5rem;">Business Plan — Phase 1: Hospitality Launch & Concept Validation</p>
+                <div class="hero-meta">
+                    <div class="meta-item">
+                        <div class="meta-label">Date</div>
+                        <div class="meta-value">April 2026</div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Location</div>
+                        <div class="meta-value">Costa del Sol, Spain</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title">Executive Summary</h2>
+
+            <div class="key-stats">
+                <div class="stat-card">
+                    <div class="stat-number">€5.6–8.8K</div>
+                    <div class="stat-label">Setup Cost</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">€2,500</div>
+                    <div class="stat-label">Monthly Rent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">5 Weeks</div>
+                    <div class="stat-label">to Launch</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">40–50</div>
+                    <div class="stat-label">Customers/Day (Breakeven)</div>
+                </div>
+            </div>
+
+            <p class="section-subtitle" style="margin-top: 2rem;">The Polka location is the first physical operating unit in the CDP ecosystem. A lean bar/cafeteria operation expanding only after validation. Provides a revenue-generating business AND a proof-of-concept for the Lighthouse Hub model. CDP's existing community (gym members, coaching clients, retreat alumni, content followers) provides a built-in customer base from day one. <strong>Zero cold-start problem.</strong></p>
+
+            <div class="callout">
+                <strong>Strategic Value:</strong> Permanent location enables event hosting, community activation, content production, merchandise retail, partner integration, and demonstrates to investors that CDP can operate physical commercial units.
+            </div>
+        </section>
+
+        <!-- Business Concept -->
+        <section class="section" id="business-concept">
+            <h2 class="section-title">Business Concept</h2>
+            <p class="section-subtitle">Why the Polka location works as a CDP community anchor.</p>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-title">Bar & Cafeteria</div>
+                    <div class="card-content">
+                        Lean Phase 1: drinks, coffee, simple tapas, healthy snacks, light food. No full restaurant service initially. Minimises staffing, licensing complexity, and food waste risk.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Outdoor Environment</div>
+                    <div class="card-content">
+                        Costa del Sol climate = outdoor seating is the primary draw. Comfort, aesthetics, community gathering. 8–10 months outdoor seating per year.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Community & Brand Activation</div>
+                    <div class="card-content">
+                        Not a conventional café. The location is a community anchor. CDP's existing community provides built-in customer base from day one.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Proof-of-Concept</div>
+                    <div class="card-content">
+                        Validation exercise. Tests whether CDP's community model translates into sustainable physical hospitality. Success unlocks repeatable "Lighthouse Hub" playbook.
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout">
+                Most hospitality startups begin with zero community. <strong>CDP begins with 200+ active members and a proven content engine.</strong>
+            </div>
+        </section>
+
+        <!-- Rollout & Launch Plan -->
+        <section class="section" id="rollout-plan">
+            <h2 class="section-title">Rollout & Launch Plan</h2>
+            <p class="section-subtitle">5-week transformation and Year 1 milestones.</p>
+
+            <h3 style="color: var(--gold); font-size: 1.3rem; margin-top: 2rem; margin-bottom: 1.5rem;">Week-by-Week Timeline</h3>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker">1</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Reset & Deep Clean</div>
+                        <div class="timeline-description">Remove prior tenant clutter, document fixtures, identify repairs</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">2</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Environment Setup</div>
+                        <div class="timeline-description">Outdoor seating, lighting, signage, furniture, CDP aesthetic</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">3</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Rebranding</div>
+                        <div class="timeline-description">Remove Polka identity, CDP/Lighthouse brand transition, signage, menus, Google Maps</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">4</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Administration</div>
+                        <div class="timeline-description">Business registration, bank account, POS/payment, accounting, suppliers</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker">5</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Launch</div>
+                        <div class="timeline-description">Soft opening with community. Feedback. Refinement. Official opening.</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.3rem; margin-top: 2rem; margin-bottom: 1.5rem;">Year 1 Milestones</h3>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-title">May 2026</div>
+                    <div class="card-content">
+                        <strong>Lean launch:</strong> bar, coffee, simple tapas. Revenue tracking begins.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Jun–Aug 2026</div>
+                    <div class="card-content">
+                        <strong>Summer validation.</strong> Menu refinement. Staffing assessment. Kitchen expansion explored if approved.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Sep–Nov 2026</div>
+                    <div class="card-content">
+                        <strong>Off-season stress test.</strong> Year-round viability check. Adjust hours/menu/staffing.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Dec 2026–Apr 2027</div>
+                    <div class="card-content">
+                        <strong>Review period.</strong> Full financial review. Continue, expand, or pivot decision.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Market Positioning -->
+        <section class="section" id="market-positioning">
+            <h2 class="section-title">Market Positioning</h2>
+            <p class="section-subtitle">Differentiation in a saturated market through ecosystem moat.</p>
+
+            <div class="callout">
+                <strong>"Not Another Café":</strong> Costa del Sol market is saturated. Differentiation comes from the <strong>ECOSYSTEM</strong>, not the menu.
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Competitive Advantages</h3>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-title">Community Loyalty</div>
+                    <div class="card-content">
+                        Active, loyalty-driven community that visits regularly and brings new people via word-of-mouth
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Content Engine</div>
+                    <div class="card-content">
+                        Organic digital visibility — venue as destination, not convenience stop
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Brand Identity</div>
+                    <div class="card-content">
+                        Health, discipline, lifestyle — growing health-conscious demographic
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Adjacent Services</div>
+                    <div class="card-content">
+                        Gym, coaching, retreats, events create multiple reasons for repeat visits
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Customer Segments</h3>
+            <div class="chart-container">
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">CDP Community</span>
+                        <span class="bar-value">40–50%</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 45%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Health-Conscious Expats</span>
+                        <span class="bar-value">20–30%</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 25%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Local Residents</span>
+                        <span class="bar-value">15–20%</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 17.5%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Walk-in / Tourist Traffic</span>
+                        <span class="bar-value">10–15%</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 12.5%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout">
+                <strong>Competitive Moat:</strong> A competitor can copy the menu but cannot copy the 200+ active community members who train together daily, the Instagram following, or the event calendar. The location monetises a pre-existing community asset.
+            </div>
+        </section>
+
+        <!-- Operational Model -->
+        <section class="section" id="operational-model">
+            <h2 class="section-title">Operational Model</h2>
+            <p class="section-subtitle">Phased rollout and sustainable operations.</p>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Phased Operating Model</h3>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-title">Phase 1A</div>
+                    <div class="card-subtitle">May–Jun 2026</div>
+                    <div class="card-content">
+                        Bar, coffee, cold tapas, snacks. Core team 2–3 people.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Phase 1B</div>
+                    <div class="card-subtitle">Jul–Sep 2026</div>
+                    <div class="card-content">
+                        Add hot tapas, expanded menu (if licensed). Core + 1 part-time.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Phase 1C</div>
+                    <div class="card-subtitle">Oct 2026–Apr 2027</div>
+                    <div class="card-content">
+                        Optimised off-season operation. Adjusted based on demand.
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Operating Hours & Seasonal Adjustment</h3>
+            <div class="callout">
+                <strong>Primary hours:</strong> 08:00–22:00 (seasonal adjustment Oct–Apr)
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Menu Categories</h3>
+            <div class="icon-list">
+                <div class="icon-item">
+                    <div class="icon-circle">☕</div>
+                    <div class="icon-text">
+                        <div class="icon-title">Coffee & Tea</div>
+                        <div class="icon-description">Specialty espresso, cortado, cappuccino, herbal teas</div>
+                    </div>
+                </div>
+                <div class="icon-item">
+                    <div class="icon-circle">🥤</div>
+                    <div class="icon-text">
+                        <div class="icon-title">Fresh Juices & Smoothies</div>
+                        <div class="icon-description">Seasonal fruit juices, protein smoothies, health shots</div>
+                    </div>
+                </div>
+                <div class="icon-item">
+                    <div class="icon-circle">🍺</div>
+                    <div class="icon-text">
+                        <div class="icon-title">Beverages</div>
+                        <div class="icon-description">Beer, wine, spirits, soft drinks, sparkling water</div>
+                    </div>
+                </div>
+                <div class="icon-item">
+                    <div class="icon-circle">🥖</div>
+                    <div class="icon-text">
+                        <div class="icon-title">Tapas & Snacks</div>
+                        <div class="icon-description">Cold tapas, jamón, cheese, toast variations, healthy bowls</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout">
+                <strong>Outdoor area:</strong> Treated as primary asset, not afterthought. Main seating area ~8–10 months/year. Community gatherings, events, partner experiences.
+            </div>
+        </section>
+
+        <!-- Team & Roles -->
+        <section class="section" id="team-roles">
+            <h2 class="section-title">Team & Roles</h2>
+            <p class="section-subtitle">Core team and estimated monthly compensation (pre-tax).</p>
+
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-title">Michelle</div>
+                    <div class="card-subtitle">Owner/Operator</div>
+                    <div class="card-content">
+                        Day-to-day management, customer experience, suppliers, on-site leadership.
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(200, 169, 110, 0.2); color: var(--gold); font-weight: 600;">€1,500/mo</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Dhaval</div>
+                    <div class="card-subtitle">Finance & Accounting</div>
+                    <div class="card-content">
+                        Bookkeeping, tax, compliance, financial reporting, bank.
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(200, 169, 110, 0.2); color: var(--gold); font-weight: 600;">€1,200–1,500/mo</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Sanna</div>
+                    <div class="card-subtitle">Content & Brand</div>
+                    <div class="card-content">
+                        Social media, photo/video, brand identity, marketing, community comms.
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(200, 169, 110, 0.2); color: var(--gold); font-weight: 600;">€1,200–1,500/mo</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Jesper</div>
+                    <div class="card-subtitle">Business Development</div>
+                    <div class="card-content">
+                        Strategic direction, partnerships, investor relations, ecosystem integration.
+                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(200, 169, 110, 0.2); color: var(--gold); font-weight: 600;">€1,000–1,500/mo</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout">
+                <strong>Note:</strong> Figures are estimates. Structure TBD (employment contract, autónomo, or service agreement). Spanish employer social security adds ~30–35% on top.
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Future Staffing</h3>
+            <p>Chef/cook, waiter/waitress for peak hours, operational support. Each hire evaluated against revenue threshold. Est. €1,400–2,100/mo total employer cost per employee.</p>
+        </section>
+
+        <!-- Legal & Compliance -->
+        <section class="section" id="legal-compliance">
+            <h2 class="section-title">Legal & Compliance</h2>
+            <p class="section-subtitle">Regulatory requirements and implementation checklist.</p>
+
+            <div class="card-grid">
+                <div class="expandable">
+                    <div class="expandable-header">
+                        <span class="expandable-title">
+                            <span>✓</span>
+                            Company Structure
+                        </span>
+                        <span class="expandable-icon">▼</span>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="content-inner">
+                            S.L. (Limitada) or S.A. registration with Spanish Commerce Registry. Responsible: Dhaval & Jesper.
+                        </div>
+                    </div>
+                </div>
+                <div class="expandable">
+                    <div class="expandable-header">
+                        <span class="expandable-title">
+                            <span>✓</span>
+                            Activity Licence
+                        </span>
+                        <span class="expandable-icon">▼</span>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="content-inner">
+                            Municipal permit for bar/cafeteria operations. Responsible: Gestor/Michelle.
+                        </div>
+                    </div>
+                </div>
+                <div class="expandable">
+                    <div class="expandable-header">
+                        <span class="expandable-title">
+                            <span>✓</span>
+                            Food Handling
+                        </span>
+                        <span class="expandable-icon">▼</span>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="content-inner">
+                            Health & safety certification. Staff training (Manipulador de Alimentos). Responsible: Michelle.
+                        </div>
+                    </div>
+                </div>
+                <div class="expandable">
+                    <div class="expandable-header">
+                        <span class="expandable-title">
+                            <span>✓</span>
+                            Terrace Permit
+                        </span>
+                        <span class="expandable-icon">▼</span>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="content-inner">
+                            Municipal approval for outdoor seating. Responsible: Gestor/Michelle.
+                        </div>
+                    </div>
+                </div>
+                <div class="expandable">
+                    <div class="expandable-header">
+                        <span class="expandable-title">
+                            <span>✓</span>
+                            Fire & Safety
+                        </span>
+                        <span class="expandable-icon">▼</span>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="content-inner">
+                            Equipment, extinguishers, emergency exits. Responsible: Michelle.
+                        </div>
+                    </div>
+                </div>
+                <div class="expandable">
+                    <div class="expandable-header">
+                        <span class="expandable-title">
+                            <span>✓</span>
+                            Music/Noise (SGAE)
+                        </span>
+                        <span class="expandable-icon">▼</span>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="content-inner">
+                            Music licensing and noise regulations. Responsible: Gestor/Sanna.
+                        </div>
+                    </div>
+                </div>
+                <div class="expandable">
+                    <div class="expandable-header">
+                        <span class="expandable-title">
+                            <span>✓</span>
+                            Labour Contracts
+                        </span>
+                        <span class="expandable-icon">▼</span>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="content-inner">
+                            Formalised employment agreements. Responsible: Dhaval/Gestor.
+                        </div>
+                    </div>
+                </div>
+                <div class="expandable">
+                    <div class="expandable-header">
+                        <span class="expandable-title">
+                            <span>✓</span>
+                            Tax Registration
+                        </span>
+                        <span class="expandable-icon">▼</span>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="content-inner">
+                            NIF/VAT ID, quarterly IVA filings. Responsible: Dhaval.
+                        </div>
+                    </div>
+                </div>
+                <div class="expandable">
+                    <div class="expandable-header">
+                        <span class="expandable-title">
+                            <span>✓</span>
+                            Data Protection
+                        </span>
+                        <span class="expandable-icon">▼</span>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="content-inner">
+                            GDPR/LOPD compliance. Privacy policy, customer data handling. Responsible: Dhaval.
+                        </div>
+                    </div>
+                </div>
+                <div class="expandable">
+                    <div class="expandable-header">
+                        <span class="expandable-title">
+                            <span>✓</span>
+                            Insurance
+                        </span>
+                        <span class="expandable-icon">▼</span>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="content-inner">
+                            General liability, employer liability, property. Responsible: Dhaval.
+                        </div>
+                    </div>
+                </div>
+                <div class="expandable">
+                    <div class="expandable-header">
+                        <span class="expandable-title">
+                            <span>✓</span>
+                            POS/Payments
+                        </span>
+                        <span class="expandable-icon">▼</span>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="content-inner">
+                            TicketBAI compliance (Basque Country specifics). Card processing setup. Responsible: Dhaval.
+                        </div>
+                    </div>
+                </div>
+                <div class="expandable">
+                    <div class="expandable-header">
+                        <span class="expandable-title">
+                            <span>✓</span>
+                            Lease Agreement
+                        </span>
+                        <span class="expandable-icon">▼</span>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="content-inner">
+                            Formalised lease terms, insurance clauses, exit conditions. Responsible: Jesper/Dhaval.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout" style="margin-top: 2rem;">
+                <strong>⚠️ Critical:</strong> Kitchen expansion and full food service only after all municipal, health, and activity licences obtained.
+            </div>
+        </section>
+
+        <!-- Financial Framework -->
+        <section class="section" id="financial-framework">
+            <h2 class="section-title">Financial Framework</h2>
+            <p class="section-subtitle">Initial investment, operating costs, revenue scenarios, and breakeven analysis.</p>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Setup Costs (One-Time)</h3>
+            <div class="chart-container">
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Deep cleaning</span>
+                        <span class="bar-value">€500–800</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 10%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Outdoor furniture</span>
+                        <span class="bar-value">€1,500–2,000</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 35%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Interior improvements</span>
+                        <span class="bar-value">€1,000–1,500</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 25%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Signage & branding</span>
+                        <span class="bar-value">€500–800</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 13%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">POS system</span>
+                        <span class="bar-value">€300–500</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 8%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Initial inventory</span>
+                        <span class="bar-value">€800–1,200</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 18%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Admin & legal</span>
+                        <span class="bar-value">€500–1,000</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 15%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Contingency</span>
+                        <span class="bar-value">€500–1,000</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 15%;"></div>
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(200, 169, 110, 0.2);">
+                    <div class="bar-label">
+                        <span class="bar-label-text" style="font-weight: 700;">TOTAL</span>
+                        <span class="bar-value" style="font-size: 1.1rem;">€5,600–8,800</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Monthly Fixed Costs</h3>
+            <div class="chart-container">
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Rent</span>
+                        <span class="bar-value">€2,500</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 29%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Team (4 persons)</span>
+                        <span class="bar-value">€4,900–6,000</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 60%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Utilities</span>
+                        <span class="bar-value">€400–600</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 6%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Internet</span>
+                        <span class="bar-value">€60–80</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 1%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Insurance</span>
+                        <span class="bar-value">€150–250</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 2.5%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Accounting</span>
+                        <span class="bar-value">€200–350</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 3.5%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">POS & bank</span>
+                        <span class="bar-value">€50–100</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 1%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Cleaning</span>
+                        <span class="bar-value">€100–200</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 2%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Marketing</span>
+                        <span class="bar-value">€100–300</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 3%;"></div>
+                    </div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">
+                        <span class="bar-label-text">Miscellaneous</span>
+                        <span class="bar-value">€200–300</span>
+                    </div>
+                    <div class="bar">
+                        <div class="bar-fill" style="width: 3%;"></div>
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid rgba(200, 169, 110, 0.2);">
+                    <div class="bar-label">
+                        <span class="bar-label-text" style="font-weight: 700;">TOTAL / MONTH</span>
+                        <span class="bar-value" style="font-size: 1.1rem;">€8,660–10,680</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Revenue Scenarios</h3>
+            <div class="revenue-cards">
+                <div class="revenue-card cautious">
+                    <div class="revenue-scenario">Cautious</div>
+                    <div class="revenue-range">30–40 customers/day × €8–10</div>
+                    <div class="revenue-range" style="font-size: 1rem; color: var(--text-light);">€7,200–12,000/mo</div>
+                    <div class="revenue-margin">Margin: −€1,460 to +€1,340</div>
+                </div>
+                <div class="revenue-card base">
+                    <div class="revenue-scenario">Base Case</div>
+                    <div class="revenue-range">50–65 customers/day × €10–12</div>
+                    <div class="revenue-range" style="font-size: 1rem; color: var(--text-light);">€15,000–23,400/mo</div>
+                    <div class="revenue-margin">Margin: +€4,320 to +€12,720</div>
+                </div>
+                <div class="revenue-card upside">
+                    <div class="revenue-scenario">Upside</div>
+                    <div class="revenue-range">75–90 customers/day × €12–15</div>
+                    <div class="revenue-range" style="font-size: 1rem; color: var(--text-light);">€27,000–40,500/mo</div>
+                    <div class="revenue-margin">Margin: +€16,320 to +€29,820</div>
+                </div>
+            </div>
+
+            <div class="callout">
+                <strong>COGS ratio:</strong> 25–35%. <strong>Net operating margin in base case:</strong> €1,000–8,000/mo.
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Breakeven Analysis</h3>
+            <div class="callout">
+                <strong>Breakeven point:</strong> ~€12,400–15,300/mo ≈ <strong>40–50 customers/day at €10–12 avg.</strong>
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Tax Considerations</h3>
+            <p style="color: var(--text-light);">IVA 10% on food/bev. Quarterly filings. Structure-dependent corporate/income tax.</p>
+        </section>
+
+        <!-- Investment Case -->
+        <section class="section" id="investment-case">
+            <h2 class="section-title">Investment Case</h2>
+            <p class="section-subtitle">Capital requirements, use of funds, and return profile.</p>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Total Investment Required</h3>
+            <div class="callout" style="text-align: center; font-size: 1.1rem;">
+                <strong style="color: var(--gold); font-size: 1.3rem;">€20,000–30,000</strong>
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Use of Funds</h3>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-title">Setup & Renovation</div>
+                    <div class="stat-number" style="margin-top: 1rem;">€5.6–8.8K</div>
+                    <div class="card-subtitle" style="margin-top: 0.5rem;">Furniture, signage, POS, licensing</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Operating Runway (3mo)</div>
+                    <div class="stat-number" style="margin-top: 1rem;">€10–15K</div>
+                    <div class="card-subtitle" style="margin-top: 0.5rem;">Payroll, rent, utilities, inventory</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Working Capital & Contingency</div>
+                    <div class="stat-number" style="margin-top: 1rem;">€4–6K</div>
+                    <div class="card-subtitle" style="margin-top: 0.5rem;">Buffer for surprises, supplier deposits</div>
+                </div>
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Risk Reduction Features</h3>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-title">1. Low Initial Capital</div>
+                    <div class="card-content">
+                        vs greenfield café start-ups. Existing venue dramatically reduces build-out risk.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">2. Fitted Venue</div>
+                    <div class="card-content">
+                        Already operational space. No construction delays or cost overruns.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">3. Built-in Customer Base</div>
+                    <div class="card-content">
+                        No cold-start problem. 200+ active CDP community = guaranteed early revenue.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">4. Phased Expansion</div>
+                    <div class="card-content">
+                        Incremental deployment. Learn, validate, then scale menu/staffing.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">5. 12-Month Validation</div>
+                    <div class="card-content">
+                        Structured review gates. Clear go/no-go decision points built in.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">6. Repeatable Model</div>
+                    <div class="card-content">
+                        Validates scalability of Lighthouse Hub playbook for future locations.
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Return Profile</h3>
+            <div class="callout">
+                <strong>Cash-flow breakeven:</strong> 2–3 months<br>
+                <strong>Positive margin from:</strong> Month 4<br>
+                <strong>Projected ROI:</strong> 8–14 months
+            </div>
+        </section>
+
+        <!-- Expansion Potential -->
+        <section class="section" id="expansion-potential">
+            <h2 class="section-title">Expansion Potential</h2>
+            <p class="section-subtitle">Lighthouse Hub evolution and multi-location strategy.</p>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Expansion Modules</h3>
+            <div class="risk-table">
+                <thead>
+                    <tr>
+                        <th>Module</th>
+                        <th>Description</th>
+                        <th>Timeline</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Indoor Gym / Training Space</strong></td>
+                        <td>Complement outdoor seating with climate-controlled fitness area</td>
+                        <td>Year 2–3</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Community Club (Membership)</strong></td>
+                        <td>Tiered access: events, coworking, discounts, exclusive content</td>
+                        <td>Year 1–2</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Co-Working Space</strong></td>
+                        <td>Private desks, meeting rooms, fast internet for digital nomads</td>
+                        <td>Year 2</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Event Hosting</strong></td>
+                        <td>Workshops, masterclasses, retreats, brand activations</td>
+                        <td>Year 1 (limited)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Wellness & Recovery</strong></td>
+                        <td>Sauna, cold plunge, massage, infrared therapy</td>
+                        <td>Year 2–3</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Additional Locations</strong></td>
+                        <td>Replicate Lighthouse Hub model in new cities</td>
+                        <td>Year 3+</td>
+                    </tr>
+                </tbody>
+            </div>
+
+            <h3 style="color: var(--gold); font-size: 1.2rem; margin-top: 2rem; margin-bottom: 1.5rem;">Lighthouse Hub Model</h3>
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-title">Hospitality Front</div>
+                    <div class="card-content">
+                        Café, bar, restaurant. Customer acquisition and daily engagement.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Community Back</div>
+                    <div class="card-content">
+                        Events, training, co-working, memberships. Retention and loyalty.
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Commerce Layer</div>
+                    <div class="card-content">
+                        Merchandise, private label products, partner activations. Additional revenue.
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout">
+                <strong>Ecosystem Integration Flywheel:</strong> First location validates all three layers. Success unlocks repeatable playbook. Second/third locations leverage proven model with lower startup risk and faster ramp. By Year 3, "Lighthouse Hub" becomes recognisable brand + licensing opportunity.
+            </div>
+        </section>
+
+        <!-- Grants & Funding -->
+        <section class="section" id="grants-funding">
+            <h2 class="section-title">Grants & Funding</h2>
+            <p class="section-subtitle">Additional capital sources (supplementary, not primary).</p>
+
+            <div class="icon-list">
+                <div class="icon-item">
+                    <div class="icon-circle">1</div>
+                    <div class="icon-text">
+                        <div class="icon-title">Municipal Grants</div>
+                        <div class="icon-description">New business creation, neighbourhood revitalisation, tourism promotion</div>
+                    </div>
+                </div>
+                <div class="icon-item">
+                    <div class="icon-circle">2</div>
+                    <div class="icon-text">
+                        <div class="icon-title">Andalucía Regional Grants</div>
+                        <div class="icon-description">Small business creation, entrepreneurship support</div>
+                    </div>
+                </div>
+                <div class="icon-item">
+                    <div class="icon-circle">3</div>
+                    <div class="icon-text">
+                        <div class="icon-title">EU-Funded Programmes</div>
+                        <div class="icon-description">FEDER, NextGenerationEU, SME growth incentives</div>
+                    </div>
+                </div>
+                <div class="icon-item">
+                    <div class="icon-circle">4</div>
+                    <div class="icon-text">
+                        <div class="icon-title">Reduced Autónomo Contributions</div>
+                        <div class="icon-description">Tarifa plana (flat-rate social security) for first year</div>
+                    </div>
+                </div>
+                <div class="icon-item">
+                    <div class="icon-circle">5</div>
+                    <div class="icon-text">
+                        <div class="icon-title">Employer Incentives</div>
+                        <div class="icon-description">Hiring specific demographics, apprenticeship programmes</div>
+                    </div>
+                </div>
+                <div class="icon-item">
+                    <div class="icon-circle">6</div>
+                    <div class="icon-text">
+                        <div class="icon-title">Tourism Subsidies</div>
+                        <div class="icon-description">Costa del Sol destination development funds</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout" style="margin-top: 2rem;">
+                <strong>Disclaimer:</strong> Not relied upon in core financial projections. Grants are pursued opportunistically and provide upside if awarded. Base case assumes no grant funding.
+            </div>
+        </section>
+
+        <!-- Risk Analysis -->
+        <section class="section" id="risk-analysis">
+            <h2 class="section-title">Risk Analysis</h2>
+            <p class="section-subtitle">Comprehensive risk matrix with impact assessment and mitigation strategies.</p>
+
+            <div class="risk-table">
+                <thead>
+                    <tr>
+                        <th>Risk</th>
+                        <th>Likelihood</th>
+                        <th>Impact</th>
+                        <th>Mitigation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Licensing Delays</strong></td>
+                        <td><span class="risk-medium">Medium</span></td>
+                        <td><span class="risk-high">High</span></td>
+                        <td>Engage gestor immediately, start with bar-only operations, pre-plan kitchen expansion for post-licensing phase</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Revenue Below Breakeven</strong></td>
+                        <td><span class="risk-medium">Medium/High</span></td>
+                        <td><span class="risk-high">High</span></td>
+                        <td>Lean cost structure, 3-month operating runway, flexible menu/hours adjustment, community activation events</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Seasonality Volatility</strong></td>
+                        <td><span class="risk-high">High</span></td>
+                        <td><span class="risk-medium">Medium</span></td>
+                        <td>Off-season cost reduction, event hosting to drive visits, build local regulars, pricing strategy seasonal adjustment</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Key Person Dependency</strong></td>
+                        <td><span class="risk-medium">Medium</span></td>
+                        <td><span class="risk-medium">Medium</span></td>
+                        <td>Cross-train team members, document all procedures, establish backup for each role, gradual autonomy building</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lease Risk</strong></td>
+                        <td><span class="risk-low">Low</span></td>
+                        <td><span class="risk-high">High</span></td>
+                        <td>Negotiate favourable terms upfront, limit initial capex, secure 2-3 year commitment, landlord goodwill building</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Regulatory Changes</strong></td>
+                        <td><span class="risk-low">Low</span></td>
+                        <td><span class="risk-medium">Medium</span></td>
+                        <td>Ongoing gestor relationship, maintain compliance buffer, monitor municipal announcements regularly</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Community Underperformance</strong></td>
+                        <td><span class="risk-low">Low</span></td>
+                        <td><span class="risk-medium">Medium</span></td>
+                        <td>Pre-launch events, consistent content engine activation, ambassador programme, partnership integration</td>
+                    </tr>
+                </tbody>
+            </div>
+        </section>
+
+        <!-- Download PDF Section -->
+        <section style="text-align: center; padding: 3rem 0; border-top: 1px solid rgba(200, 169, 110, 0.2);">
+            <h3 style="color: var(--gold); margin-bottom: 1.5rem;">Export Your Business Plan</h3>
+            <button class="pdf-button" onclick="window.print()">📄 Download as PDF</button>
+            <p style="color: var(--text-muted); margin-top: 1.5rem; font-size: 0.9rem;">Print or save as PDF using your browser's print dialog</p>
+        </section>
+    </main>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        themeToggle.addEventListener('click', () => {
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+                themeToggle.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+                themeToggle.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        body.classList.remove('dark-mode', 'light-mode');
+        body.classList.add(savedTheme + '-mode');
+        themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+
+        // Smooth scroll and active navigation
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('.section');
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+
+                const targetId = link.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    targetSection.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Update active link on scroll
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Expandable sections
+        const expandableHeaders = document.querySelectorAll('.expandable-header');
+        expandableHeaders.forEach(header => {
+            header.addEventListener('click', () => {
+                const expandable = header.closest('.expandable');
+                expandable.classList.toggle('active');
+            });
+        });
+
+        // Fade-in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(section => {
+            section.style.animationPlayState = 'paused';
+            observer.observe(section);
+        });
+
+        // Mobile menu toggle
+        const navList = document.getElementById('navList');
+        themeToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!navList.contains(e.target) && e.target !== themeToggle) {
+                navList.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
